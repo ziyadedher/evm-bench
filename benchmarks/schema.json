@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "evm-bench.benchmark.schema.json",
+  "title": "emv-bench benchmark metadata",
+  "description": "Describes an individual benchmark in the evm-bench system.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "description": "Unique name for this benchmark.",
+      "type": "string"
+    },
+    "solc-version": {
+      "description": "Version of the `solc` compiler to use. This should correspond to a docker tag.",
+      "type": "string",
+      "examples": ["stable", "0.4.26"],
+      "default": "stable"
+    },
+    "num-runs": {
+      "description": "Number of runs of this benchmark. Balance based on how long the benchmark takes.",
+      "type": "integer",
+      "default": 10
+    },
+    "contract": {
+      "description": "Path to the contract to deploy and benchmark. Can be relative to the manifest.json.",
+      "type": "string"
+    },
+    "calldata": {
+      "description": "Calldata hex to use when calling the contract to conduct the benchmark.",
+      "type": "string",
+      "default": ""
+    }
+  },
+  "required": ["name", "contract"]
+}

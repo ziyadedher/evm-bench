@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "evm-bench.runner.schema.json",
+  "title": "emv-bench runner metadata",
+  "description": "Describes an individual runner in the evm-bench system.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "description": "Unique name for this runner.",
+      "type": "string"
+    },
+    "entry": {
+      "description": "Path to an executable that implements the runner interface.",
+      "type": "string"
+    }
+  },
+  "required": ["name", "entry"]
+}

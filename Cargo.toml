@@ -1,0 +1,23 @@
+[package]
+name = "evm-bench"
+version = "0.1.0"
+authors = ["Ziyad Edher <ziyad.edher@gmail.com>"]
+edition = "2021"
+description = "🚀🪑 evm-bench is a suite of Ethereum Virtual Machine stress tests and benchmarks."
+readme = "README.md"
+homepage = "https://github.com/ziyadedher/evm-bench"
+repository = "https://github.com/ziyadedher/evm-bench"
+license-file = "LICENSE"
+keywords = ["benchmark", "ethereum", "smart-contracts", "ethereum-contract", "benchmark-framework", "evm", "evm-bytecode"]
+
+
+[dependencies]
+bytes = "1.2.1"
+clap = { version = "4.0.11", features = ["derive"] }
+env_logger = "0.9.1"
+glob = "0.3.0"
+hex = "0.4.3"
+jsonschema = "0.16.0"
+log = "0.4.17"
+serde_json = "1.0.86"
+users = "0.11.0"
