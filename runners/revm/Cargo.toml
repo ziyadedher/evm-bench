@@ -1,0 +1,11 @@
+[package]
+name = "runner-revm"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bytes = "1.1"
+clap = { version = "4.0.11", features = ["derive"] }
+hex = "0.4"
+primitive-types = { version = "0.11", features = ["rlp"] }
+revm = "2.1.0"
