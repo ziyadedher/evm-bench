@@ -1,19 +1,21 @@
 use std::{
+    collections::HashSet,
     error, fs,
     path::{Path, PathBuf},
-    process::exit,
 };
 
-use bytes::Bytes;
 use glob::glob;
+use serde::Serialize;
 
-pub trait Metadata {
+pub trait MetadataParser
+where
+    Self: Sized,
+{
+    type Defaults;
+
     fn parse_schema_from_file(
         schema_path: &Path,
-    ) -> Result<serde_json::Value, Box<dyn error::Error>>
-    where
-        Self: Sized,
-    {
+    ) -> Result<serde_json::Value, Box<dyn error::Error>> {
         let schema_file = fs::File::open(schema_path)?;
         Ok(serde_json::from_reader(&schema_file)?)
     }
@@ -21,16 +23,15 @@ pub trait Metadata {
     fn parse_from_file(
         schema: &serde_json::Value,
         json_path: &Path,
-    ) -> Result<Self, Box<dyn error::Error>>
-    where
-        Self: Sized,
-    {
+        defaults: &Self::Defaults,
+    ) -> Result<Self, Box<dyn error::Error>> {
         let json_file = fs::File::open(json_path)?;
         let json = serde_json::from_reader(&json_file)?;
         Self::parse(
             json_path.parent().ok_or("could not get parent")?,
             schema,
             &json,
+            defaults,
         )
     }
 
@@ -38,13 +39,10 @@ pub trait Metadata {
         base_path: &Path,
         schema: &serde_json::Value,
         json: &serde_json::Value,
-    ) -> Result<Self, Box<dyn error::Error>>
-    where
-        Self: Sized,
-    {
-        // if jsonschema::is_valid(schema, json) {
-        if true {
-            Self::parse_inner(base_path, json)
+        defaults: &Self::Defaults,
+    ) -> Result<Self, Box<dyn error::Error>> {
+        if jsonschema::is_valid(schema, json) {
+            Self::parse_inner(base_path, json, defaults)
         } else {
             Err("json does not abide by the schema".into())
         }
@@ -53,47 +51,53 @@ pub trait Metadata {
     fn parse_inner(
         base_path: &Path,
         json: &serde_json::Value,
-    ) -> Result<Self, Box<dyn error::Error>>
-    where
-        Self: Sized;
+        defaults: &Self::Defaults,
+    ) -> Result<Self, Box<dyn error::Error>>;
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize)]
 pub struct Benchmark {
     pub name: String,
-    pub solc_version: Option<String>,
-    pub num_runs: Option<u64>,
+    pub solc_version: String,
+    pub num_runs: u64,
     pub contract: PathBuf,
-    pub calldata: Option<Bytes>,
+    pub calldata: Vec<u8>,
 }
 
-impl Metadata for Benchmark {
+pub struct BenchmarkDefaults {
+    pub solc_version: String,
+    pub num_runs: u64,
+    pub calldata: Vec<u8>,
+}
+
+impl MetadataParser for Benchmark {
+    type Defaults = BenchmarkDefaults;
+
     fn parse_inner(
         base_path: &Path,
         json: &serde_json::Value,
+        defaults: &Self::Defaults,
     ) -> Result<Self, Box<dyn error::Error>> {
+        log::trace!("parsing benchmark metadata...");
         let object = json.as_object().expect("could not parse json as object");
-        Ok(Self {
+        let benchmark = Self {
             name: object
                 .get("name")
                 .ok_or("could not find name")?
                 .as_str()
                 .ok_or("could not parse name as string")?
                 .to_string(),
-            solc_version: object.get("solc-version").map_or(
-                Ok::<Option<std::string::String>, Box<dyn error::Error>>(None),
-                |x| {
-                    Ok(Some(
-                        x.as_str()
-                            .ok_or("could not parse solc-version as string")?
-                            .to_string(),
-                    ))
-                },
-            )?,
+            solc_version: object
+                .get("solc-version")
+                .map_or(
+                    Ok::<&str, Box<dyn error::Error>>(&defaults.solc_version),
+                    |x| Ok(x.as_str().ok_or("could not parse solc-version as string")?),
+                )?
+                .to_string(),
             num_runs: object
                 .get("num-runs")
-                .map_or(Ok::<Option<u64>, Box<dyn error::Error>>(None), |x| {
-                    Ok(Some(x.as_u64().ok_or("could not parse num-runs as u64")?))
+                .map_or(Ok::<u64, Box<dyn error::Error>>(defaults.num_runs), |x| {
+                    Ok(x.as_u64().ok_or("could not parse num-runs as u64")?)
                 })?,
             contract: base_path
                 .join(PathBuf::from(
@@ -105,30 +109,37 @@ impl Metadata for Benchmark {
                 ))
                 .canonicalize()?,
             calldata: object.get("calldata").map_or(
-                Ok::<Option<bytes::Bytes>, Box<dyn error::Error>>(None),
+                Ok::<Vec<u8>, Box<dyn error::Error>>(defaults.calldata.clone()),
                 |x| {
-                    Ok(Some(
-                        hex::decode(x.as_str().ok_or("could not parse calldata as bytes")?)?.into(),
-                    ))
+                    Ok(hex::decode(
+                        x.as_str().ok_or("could not parse calldata as bytes")?,
+                    )?)
                 },
             )?,
-        })
+        };
+        log::debug!("parsed benchmark metadata: {}", &benchmark.name);
+        log::trace!("benchmark metadata: {:?}", benchmark);
+        Ok(benchmark)
     }
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize)]
 pub struct Runner {
     pub name: String,
     pub entry: PathBuf,
 }
 
-impl Metadata for Runner {
+impl MetadataParser for Runner {
+    type Defaults = ();
+
     fn parse_inner(
         base_path: &Path,
         json: &serde_json::Value,
+        _: &Self::Defaults,
     ) -> Result<Self, Box<dyn error::Error>> {
+        log::trace!("parsing runner metadata...");
         let object = json.as_object().expect("could not parse json as object");
-        Ok(Self {
+        let runner = Self {
             name: object
                 .get("name")
                 .ok_or("could not find name")?
@@ -144,51 +155,105 @@ impl Metadata for Runner {
                         .ok_or("could not parse entry as string")?,
                 ))
                 .canonicalize()?,
-        })
+        };
+        log::debug!("parsed runner metadata: {}", &runner.name);
+        log::trace!("runner metadata: {:?}", runner);
+        Ok(runner)
     }
 }
 
-pub fn find_metadata<T: Metadata>(
+fn find_metadata<T: MetadataParser>(
     file_name: &str,
     schema_path: &Path,
     search_path: &Path,
+    defaults: T::Defaults,
 ) -> Result<Vec<T>, Box<dyn error::Error>> {
     let schema = Benchmark::parse_schema_from_file(schema_path)?;
 
-    let path = search_path
-        .canonicalize()
-        .expect("could not canonicalize search path");
-    if !path.is_dir() {
-        log::error!("{} is not a directory", path.display());
-        exit(-1);
+    let search_path = search_path.canonicalize()?;
+    if !search_path.is_dir() {
+        return Err(format!("{} is not a directory", search_path.display()).into());
     }
 
-    Ok(glob(
-        path.join("**")
-            .join(file_name)
-            .to_str()
-            .expect("could not construct glob"),
+    Ok(
+        glob(&search_path.join("**").join(file_name).to_string_lossy())?
+            .flat_map(|entry| match entry {
+                Ok(path) => {
+                    log::debug!(
+                        "found {}",
+                        path.strip_prefix(&search_path).unwrap_or(&path).display()
+                    );
+                    Some(path)
+                }
+                Err(e) => {
+                    log::warn!("error globing file: {:?}", e);
+                    None
+                }
+            })
+            .flat_map(|path| match T::parse_from_file(&schema, &path, &defaults) {
+                Ok(res) => {
+                    log::debug!(
+                        "parsed {}",
+                        path.strip_prefix(&search_path).unwrap_or(&path).display()
+                    );
+                    Some(res)
+                }
+                Err(e) => {
+                    log::warn!("error parsing file: {:?}", e);
+                    None
+                }
+            })
+            .collect(),
     )
-    .expect("could not read glob pattern")
-    .flat_map(|entry| match entry {
-        Ok(path) => {
-            log::debug!("found {}", path.display());
-            Some(path)
-        }
-        Err(e) => {
-            log::warn!("error globing file: {:?}", e);
-            None
-        }
-    })
-    .flat_map(|path| match T::parse_from_file(&schema, &path) {
-        Ok(res) => {
-            log::debug!("parsed {}", path.display());
-            Some(res)
-        }
-        Err(e) => {
-            log::warn!("error parsing file: {:?}", e);
-            None
-        }
-    })
-    .collect())
+}
+
+pub fn find_benchmarks(
+    file_name: &str,
+    schema_path: &Path,
+    search_path: &Path,
+    benchmark_defaults: BenchmarkDefaults,
+) -> Result<Vec<Benchmark>, Box<dyn error::Error>> {
+    let benchmarks =
+        find_metadata::<Benchmark>(file_name, schema_path, search_path, benchmark_defaults)?;
+    let benchmark_names = benchmarks
+        .iter()
+        .map(|b| b.name.clone())
+        .collect::<HashSet<_>>();
+    if benchmark_names.len() != benchmarks.len() {
+        Err("found duplicate benchmark names".into())
+    } else {
+        log::info!(
+            "found {} benchmarks: {}",
+            benchmarks.len(),
+            benchmark_names
+                .iter()
+                .cloned()
+                .collect::<Vec<_>>()
+                .join(", ")
+        );
+        Ok(benchmarks)
+    }
+}
+
+pub fn find_runners(
+    file_name: &str,
+    schema_path: &Path,
+    search_path: &Path,
+    runner_defaults: (),
+) -> Result<Vec<Runner>, Box<dyn error::Error>> {
+    let runners = find_metadata::<Runner>(file_name, schema_path, search_path, runner_defaults)?;
+    let runner_names = runners
+        .iter()
+        .map(|b| b.name.clone())
+        .collect::<HashSet<_>>();
+    if runner_names.len() != runners.len() {
+        Err("found duplicate runners names".into())
+    } else {
+        log::info!(
+            "found {} runners: {}",
+            runners.len(),
+            runner_names.iter().cloned().collect::<Vec<_>>().join(", ")
+        );
+        Ok(runners)
+    }
 }

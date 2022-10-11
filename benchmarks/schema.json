@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
-  "$id": "evm-bench.benchmark.schema.json",
+  "$id": "https://ziyadedher.com/benchmark.evm-bench.schema.json",
   "title": "emv-bench benchmark metadata",
   "description": "Describes an individual benchmark in the evm-bench system.",
   "type": "object",
