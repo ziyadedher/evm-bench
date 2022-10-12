@@ -5,7 +5,7 @@ use std::{
 };
 
 use glob::glob;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 pub trait MetadataParser
 where
@@ -55,7 +55,7 @@ where
     ) -> Result<Self, Box<dyn error::Error>>;
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub struct Benchmark {
     pub name: String,
     pub solc_version: String,
@@ -123,7 +123,7 @@ impl MetadataParser for Benchmark {
     }
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub struct Runner {
     pub name: String,
     pub entry: PathBuf,

@@ -1,9 +1,13 @@
 use std::{
+    error,
     path::{Path, PathBuf},
-    process::{exit, Command},
+    process::Command,
 };
 
-pub fn validate_executable_or_exit(name: &str, executable: &Path) -> PathBuf {
+pub fn validate_executable(
+    name: &str,
+    executable: &Path,
+) -> Result<PathBuf, Box<dyn error::Error>> {
     log::trace!("validating executable {} ({name})", executable.display());
     match Command::new(&executable).arg("--version").output() {
         Ok(out) => {
@@ -14,17 +18,13 @@ pub fn validate_executable_or_exit(name: &str, executable: &Path) -> PathBuf {
                     .expect("could not decode program stdout")
                     .trim_end_matches("\n")
             );
-            executable.to_path_buf()
+            Ok(executable.to_path_buf())
         }
         Err(e) => match e.kind() {
             std::io::ErrorKind::NotFound => {
-                log::error!("{name} not found, tried {}", executable.display());
-                exit(-1);
+                Err(format!("{name} not found, tried {}", executable.display()).into())
             }
-            _ => {
-                log::error!("unknown error: {e}");
-                exit(-1);
-            }
+            _ => Err(format!("unknown error: {e}").into()),
         },
     }
 }

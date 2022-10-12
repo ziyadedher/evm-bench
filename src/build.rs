@@ -1,6 +1,7 @@
 use std::{
     collections::HashSet,
     error,
+    fs::create_dir_all,
     path::{Path, PathBuf},
     process::Command,
 };
@@ -46,6 +47,8 @@ fn build_benchmark(
 
     let docker_contract_path = PathBuf::from("/benchmark").join(&contract_name);
     let docker_build_path = PathBuf::from("/build");
+
+    create_dir_all(&build_context.build_path)?;
 
     let out = Command::new(&build_context.docker_executable)
         .arg("run")
