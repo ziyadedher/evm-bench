@@ -196,18 +196,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "fixed-hash"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "835c052cb0c08c1acf6ffd71c022172e18723949c8282f2b9f27efbc51e64534"
-dependencies = [
- "byteorder",
- "rand",
- "rustc-hex",
- "static_assertions",
-]
-
-[[package]]
 name = "funty"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -461,19 +449,7 @@ version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e28720988bff275df1f51b171e1b2a18c30d194c4d2b61defdacecd625a5d94a"
 dependencies = [
- "fixed-hash 0.7.0",
- "impl-codec",
- "impl-rlp",
- "uint",
-]
-
-[[package]]
-name = "primitive-types"
-version = "0.12.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5cfd65aea0c5fa0bfcc7c9e7ca828c921ef778f43d325325ec84bda371bfa75a"
-dependencies = [
- "fixed-hash 0.8.0",
+ "fixed-hash",
  "impl-codec",
  "impl-rlp",
  "uint",
@@ -579,7 +555,7 @@ dependencies = [
  "bytes",
  "hashbrown",
  "num_enum",
- "primitive-types 0.11.1",
+ "primitive-types",
  "revm_precompiles",
  "rlp",
  "sha3",
@@ -595,7 +571,7 @@ dependencies = [
  "hashbrown",
  "num",
  "once_cell",
- "primitive-types 0.11.1",
+ "primitive-types",
  "ripemd",
  "secp256k1",
  "sha2",
@@ -629,7 +605,7 @@ dependencies = [
  "bytes",
  "clap",
  "hex",
- "primitive-types 0.12.0",
+ "primitive-types",
  "revm",
 ]
 

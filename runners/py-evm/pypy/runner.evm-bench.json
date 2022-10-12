@@ -1,0 +1,5 @@
+{
+  "$schema": "../../schema.json",
+  "name": "py-evm.pypy",
+  "entry": "entry.sh"
+}
