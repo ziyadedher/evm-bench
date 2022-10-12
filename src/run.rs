@@ -30,10 +30,15 @@ fn run_benchmark_on_runner(
         runner.name
     );
     log::debug!(
-        "running {} times using code {:?} with calldata {:?}...",
+        "running {} times using code {} with calldata {}...",
         benchmark.benchmark.num_runs,
-        benchmark.result.contract_bin_path.file_name().unwrap(),
-        benchmark.benchmark.calldata
+        benchmark
+            .result
+            .contract_bin_path
+            .file_name()
+            .unwrap()
+            .to_string_lossy(),
+        hex::encode(&benchmark.benchmark.calldata),
     );
 
     let out = Command::new(&runner.entry)
@@ -52,7 +57,9 @@ fn run_benchmark_on_runner(
     if out.status.success() {
         let mut times: Vec<Duration> = Vec::new();
         for line in stdout.trim().split("\n") {
-            times.push(Duration::from_millis(str::parse::<u64>(line)?));
+            times.push(Duration::from_millis(
+                str::parse::<f64>(line)?.round() as u64
+            ));
         }
 
         log::debug!(

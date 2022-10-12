@@ -26,9 +26,17 @@ struct Args {
     #[arg(long, default_value = "./benchmarks")]
     benchmark_search_path: PathBuf,
 
+    /// Names of benchmarks to run.
+    #[arg(long, default_value = None)]
+    benchmarks: Option<Vec<String>>,
+
     /// Path to use as the base for runners searching
     #[arg(short, long, default_value = "./runners")]
     runner_search_path: PathBuf,
+
+    /// Names of runners to use.
+    #[arg(long, default_value = None)]
+    runners: Option<Vec<String>>,
 
     /// Output path for build artifacts and other things
     #[arg(short, long, default_value = "./outputs")]
@@ -42,6 +50,14 @@ struct Args {
     /// Path to a Docker executable (this is used for solc)
     #[arg(long, default_value = "docker")]
     docker_executable: PathBuf,
+
+    /// Path to a CPython executable (this is used for runners)
+    #[arg(long, default_value = "python3")]
+    cpython_executable: PathBuf,
+
+    /// Path to a PyPy executable (this is used for runners)
+    #[arg(long, default_value = "pypy3")]
+    pypy_executable: PathBuf,
 
     /// Path to benchmark metadata schema
     #[arg(long, default_value = "./benchmarks/schema.json")]
@@ -80,6 +96,9 @@ fn main() {
     (|| -> Result<(), Box<dyn error::Error>> {
         let docker_executable = validate_executable("docker", &args.docker_executable)?;
         let _ = validate_executable("cargo", &PathBuf::from("cargo"))?;
+        let _ = validate_executable("poetry", &PathBuf::from("poetry"))?;
+        let _ = validate_executable("python3", &PathBuf::from(args.cpython_executable))?;
+        let _ = validate_executable("pypy3", &PathBuf::from(args.pypy_executable))?;
 
         let default_calldata = hex::decode(args.default_calldata_str.to_string())?;
 
@@ -94,6 +113,14 @@ fn main() {
                 calldata: default_calldata,
             },
         )?;
+        let mut benchmarks = match args.benchmarks {
+            None => benchmarks,
+            Some(arg_benchmarks) => benchmarks
+                .into_iter()
+                .filter(|b| arg_benchmarks.contains(&b.name))
+                .collect(),
+        };
+        benchmarks.sort_by_key(|b| b.name.clone());
 
         let runners_path = args.runner_search_path.canonicalize()?;
         let runners = find_runners(
@@ -102,6 +129,14 @@ fn main() {
             &runners_path,
             (),
         )?;
+        let mut runners = match args.runners {
+            None => runners,
+            Some(arg_runners) => runners
+                .into_iter()
+                .filter(|r| arg_runners.contains(&r.name))
+                .collect(),
+        };
+        runners.sort_by_key(|b| b.name.clone());
 
         let outputs_path = args.output_path.canonicalize()?;
 

@@ -1,0 +1,5 @@
+{
+  "$schema": "../schema.json",
+  "name": "pyrevm",
+  "entry": "entry.sh"
+}
