@@ -1,9 +1,9 @@
-use std::{path::PathBuf, process::exit};
+use std::{error, path::PathBuf, process::exit};
 
 extern crate glob;
 
 use clap::Parser;
-use results::record_results;
+use results::{print_results, record_results};
 
 mod build;
 mod exec;
@@ -13,7 +13,7 @@ mod run;
 
 use crate::{
     build::build_benchmarks,
-    exec::validate_executable_or_exit,
+    exec::validate_executable,
     metadata::{find_benchmarks, find_runners, BenchmarkDefaults},
     run::run_benchmarks_on_runners,
 };
@@ -77,56 +77,47 @@ fn main() {
 
     let args = Args::parse();
 
-    let docker_executable = validate_executable_or_exit("docker", &args.docker_executable);
-    let _ = validate_executable_or_exit("cargo", &PathBuf::from("cargo"));
+    (|| -> Result<(), Box<dyn error::Error>> {
+        let docker_executable = validate_executable("docker", &args.docker_executable)?;
+        let _ = validate_executable("cargo", &PathBuf::from("cargo"))?;
 
-    let benchmarks_path = args.benchmark_search_path.canonicalize().unwrap();
-    let benchmarks = find_benchmarks(
-        &args.benchmark_metadata_name,
-        &args.benchmark_metadata_schema,
-        &benchmarks_path,
-        BenchmarkDefaults {
-            solc_version: args.default_solc_version,
-            num_runs: args.default_num_runs,
-            calldata: hex::decode(args.default_calldata_str.to_string())
-                .expect("error parsing default calldata"),
-        },
-    )
+        let default_calldata = hex::decode(args.default_calldata_str.to_string())?;
+
+        let benchmarks_path = args.benchmark_search_path.canonicalize()?;
+        let benchmarks = find_benchmarks(
+            &args.benchmark_metadata_name,
+            &args.benchmark_metadata_schema,
+            &benchmarks_path,
+            BenchmarkDefaults {
+                solc_version: args.default_solc_version,
+                num_runs: args.default_num_runs,
+                calldata: default_calldata,
+            },
+        )?;
+
+        let runners_path = args.runner_search_path.canonicalize()?;
+        let runners = find_runners(
+            &args.runner_metadata_name,
+            &args.runner_metadata_schema,
+            &runners_path,
+            (),
+        )?;
+
+        let outputs_path = args.output_path.canonicalize()?;
+
+        let builds_path = outputs_path.join("build");
+        let built_benchmarks = build_benchmarks(&benchmarks, &docker_executable, &builds_path)?;
+
+        let results = run_benchmarks_on_runners(&built_benchmarks, &runners)?;
+
+        let results_path = outputs_path.join("results");
+        let result_file_path = record_results(&results_path, args.output_file_name, &results)?;
+        print_results(&result_file_path)?;
+
+        Ok(())
+    })()
     .unwrap_or_else(|e| {
-        log::error!("could not find benchmarks: {e}");
+        log::error!("{e}");
         exit(-1);
     });
-
-    let runners_path = args.runner_search_path.canonicalize().unwrap();
-    let runners = find_runners(
-        &args.runner_metadata_name,
-        &args.runner_metadata_schema,
-        &runners_path,
-        (),
-    )
-    .unwrap_or_else(|e| {
-        log::error!("could not find runners: {e}");
-        exit(-1);
-    });
-
-    let outputs_path = args.output_path.canonicalize().unwrap();
-
-    let builds_path = outputs_path.join("build");
-    let built_benchmarks = build_benchmarks(&benchmarks, &docker_executable, &builds_path)
-        .unwrap_or_else(|e| {
-            log::error!("could not build benchmarks: {e}");
-            exit(-1);
-        });
-
-    let results = run_benchmarks_on_runners(&built_benchmarks, &runners).unwrap_or_else(|e| {
-        log::error!("could not run benchmarks: {e}");
-        exit(-1);
-    });
-
-    let results_path = outputs_path.join("results");
-    let _result_file_path = record_results(&results_path, args.output_file_name, &results)
-        .unwrap_or_else(|e| {
-            log::error!("could not record results: {e}");
-            exit(-1);
-        });
 }

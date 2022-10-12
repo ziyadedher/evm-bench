@@ -5,14 +5,14 @@ use std::{
     time::Duration,
 };
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     build::BuiltBenchmark,
     metadata::{Benchmark, Runner},
 };
 
-#[derive(Debug, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct RunResult {
     pub run_times: Vec<Duration>,
 }
