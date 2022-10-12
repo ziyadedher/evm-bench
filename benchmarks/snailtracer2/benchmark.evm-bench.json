@@ -1,8 +1,0 @@
-{
-  "$schema": "../schema.json",
-  "name": "snailtracer2",
-  "num-runs": 10,
-  "solc-version": "0.4.26",
-  "contract": "SnailTracer2.sol",
-  "calldata": "30627b7c"
-}
