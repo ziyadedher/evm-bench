@@ -1,4 +1,4 @@
-use std::{error, path::PathBuf, process::exit};
+use std::{error, fs, path::PathBuf, process::exit};
 
 extern crate glob;
 
@@ -138,14 +138,17 @@ fn main() {
         };
         runners.sort_by_key(|b| b.name.clone());
 
+        fs::create_dir_all(&args.output_path)?;
         let outputs_path = args.output_path.canonicalize()?;
 
         let builds_path = outputs_path.join("build");
+        fs::create_dir_all(&builds_path)?;
         let built_benchmarks = build_benchmarks(&benchmarks, &docker_executable, &builds_path)?;
 
         let results = run_benchmarks_on_runners(&built_benchmarks, &runners)?;
 
         let results_path = outputs_path.join("results");
+        fs::create_dir_all(&results_path)?;
         let result_file_path = record_results(&results_path, args.output_file_name, &results)?;
         print_results(&result_file_path)?;
 

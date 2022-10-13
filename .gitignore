@@ -1,6 +1,2 @@
-/.venv
-
-
-# Added by cargo
-
 /target
+/output
