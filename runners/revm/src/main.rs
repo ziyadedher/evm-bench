@@ -65,7 +65,7 @@ fn main() {
         let dur = timer.elapsed();
 
         match res.exit_reason {
-            Return::Return => (),
+            Return::Return | Return::Stop => (),
             reason => {
                 panic!("unexpected exit reason while benchmarking: {:?}", reason)
             }

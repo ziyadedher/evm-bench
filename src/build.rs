@@ -14,6 +14,7 @@ use crate::metadata::Benchmark;
 struct BuildContext {
     docker_executable: PathBuf,
     contract_path: PathBuf,
+    contract_context_path: PathBuf,
     build_path: PathBuf,
 }
 
@@ -45,7 +46,12 @@ fn build_benchmark(
         benchmark.solc_version
     );
 
-    let docker_contract_path = PathBuf::from("/benchmark").join(&contract_name);
+    let relative_contract_path = build_context
+        .contract_path
+        .strip_prefix(&build_context.contract_context_path)?;
+
+    let docker_contract_context_path = PathBuf::from("/benchmark");
+    let docker_contract_path = docker_contract_context_path.join(relative_contract_path);
     let docker_build_path = PathBuf::from("/build");
 
     create_dir_all(&build_context.build_path)?;
@@ -60,15 +66,8 @@ fn build_benchmark(
             "-v",
             &format!(
                 "{}:{}",
-                build_context
-                    .contract_path
-                    .parent()
-                    .ok_or("could not find parent of contract path")?
-                    .to_string_lossy(),
-                docker_contract_path
-                    .parent()
-                    .ok_or("could not find parent of docker contract path")?
-                    .to_string_lossy()
+                build_context.contract_context_path.to_string_lossy(),
+                docker_contract_context_path.to_string_lossy()
             ),
         ])
         .args([
@@ -130,6 +129,7 @@ pub fn build_benchmarks(
                 &BuildContext {
                     docker_executable: docker_executable.to_path_buf(),
                     contract_path: benchmark.contract.clone(),
+                    contract_context_path: benchmark.build_context.clone(),
                     build_path: builds_path.join(&benchmark.name),
                 },
             ) {

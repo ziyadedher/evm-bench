@@ -1,0 +1,7 @@
+{
+  "$schema": "../schema.json",
+  "name": "ten-thousand-hashes",
+  "num-runs": 5,
+  "contract": "TenThousandHashes.sol",
+  "calldata": "30627b7c"
+}
