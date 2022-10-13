@@ -61,6 +61,7 @@ pub struct Benchmark {
     pub solc_version: String,
     pub num_runs: u64,
     pub contract: PathBuf,
+    pub build_context: PathBuf,
     pub calldata: Vec<u8>,
 }
 
@@ -107,6 +108,16 @@ impl MetadataParser for Benchmark {
                         .as_str()
                         .ok_or("could not parse contract as string")?,
                 ))
+                .canonicalize()?,
+            build_context: base_path
+                .join(PathBuf::from(object.get("build-context").map_or(
+                    Ok::<String, Box<dyn error::Error>>(".".into()),
+                    |x| {
+                        Ok(x.as_str()
+                            .ok_or("could not parse build-context as string")?
+                            .to_string())
+                    },
+                )?))
                 .canonicalize()?,
             calldata: object.get("calldata").map_or(
                 Ok::<Vec<u8>, Box<dyn error::Error>>(defaults.calldata.clone()),

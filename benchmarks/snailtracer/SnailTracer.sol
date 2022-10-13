@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: GPL-3.0
+// This contract is a slightly modified version of Péter Szilágyi's snailtracer.sol, licensed under GPL-3.0
+// https://github.com/karalabe/snailtracer
+
 contract SnailTracer {
   // Image properties for the path tracer
   int    width;  // Width of the image being generated, fixed for life

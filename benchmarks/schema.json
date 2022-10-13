@@ -21,7 +21,11 @@
       "default": 10
     },
     "contract": {
-      "description": "Path to the contract to deploy and benchmark. Can be relative to the manifest.json.",
+      "description": "Path to the contract to deploy and benchmark. Can be relative to the metadata.",
+      "type": "string"
+    },
+    "build-context": {
+      "description": "Path to the folder to use as context to build this benchmark. Can be relative to the metadata.",
       "type": "string"
     },
     "calldata": {
