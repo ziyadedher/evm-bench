@@ -10,7 +10,7 @@
       "type": "string"
     },
     "solc-version": {
-      "description": "Version of the `solc` compiler to use. This should correspond to a docker tag.",
+      "description": "Version of the `solc` compiler to use. This should correspond to a Docker tag.",
       "type": "string",
       "examples": ["stable", "0.4.26"],
       "default": "stable"
