@@ -4,7 +4,7 @@
 
 **evm-bench is a suite of Ethereum Virtual Machine (EVM) stress tests and benchmarks.**
 
-evm-bench makes it easy to compare performance in a scalable, standardized, and portable way.
+evm-bench makes it easy to compare EVM performance in a scalable, standardized, and portable way.
 
 |                         | py-evm.cpython | py-evm.pypy | pyrevm  | revm   |
 | ----------------------- | -------------- | ----------- | ------- | ------ |
