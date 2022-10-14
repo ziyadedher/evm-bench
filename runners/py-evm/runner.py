@@ -1,6 +1,6 @@
-import argparse
-from typing import Final, cast
+from typing import cast, Final
 
+import argparse
 import pathlib
 import time
 
@@ -44,7 +44,7 @@ def _construct_chain() -> eth.chains.base.MiningChain:
     chain = chain_class.from_genesis(
         eth.db.atomic.AtomicDB(),
         genesis_params={
-            "difficulty": 100,
+            "difficulty": 1,
             "gas_limit": 2 * GAS_LIMIT,
         },
     )
