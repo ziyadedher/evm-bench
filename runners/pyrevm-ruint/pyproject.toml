@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "runner-pyrevm"
+version = "0.1.0"
+description = ""
+authors = ["Ziyad Edher <ziyad.edher@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pyrevm = { git = "https://github.com/recmo/pyrevm.git", branch = "ruint" }
+py-evm = "^0.6.0-alpha.1"
+
+[tool.poetry.dev-dependencies]
+mypy = "^0.982"
+black = "^22.10.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
