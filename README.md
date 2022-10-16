@@ -6,16 +6,16 @@
 
 evm-bench makes it easy to compare EVM performance in a scalable, standardized, and portable way.
 
-|                         | py-evm.cpython | py-evm.pypy | pyrevm | revm   |
-| ----------------------- | -------------- | ----------- | ------ | ------ |
-| erc20.approval-transfer | 1.4258s        | 377.2ms     | 16.8ms | 10ms   |
-| erc20.mint              | 1.4092s        | 347.8ms     | 14.4ms | 5.6ms  |
-| erc20.transfer          | 1.9988s        | 420.8ms     | 22.6ms | 11.4ms |
-| snailtracer             | 17.857s        | 5.17s       | 138ms  | 58ms   |
-| ten-thousand-hashes     | 3.4344s        | 665.6ms     | 18.2ms | 7ms    |
-|                         |                |             |        |        |
-| **sum**                 | 26.1252s       | 6.9814s     | 210ms  | 92ms   |
-| **relative**            | 284x           | 75.9x       | 2.28x  | 1.00x  |
+|                         | geth    | py-evm.cpython | py-evm.pypy | pyrevm  | revm   |
+| ----------------------- | ------- | -------------- | ----------- | ------- | ------ |
+| erc20.approval-transfer | 18.2ms  | 1.3636s        | 439ms       | 16.8ms  | 9ms    |
+| erc20.mint              | 16.4ms  | 1.4246s        | 352.6ms     | 14.4ms  | 5.4ms  |
+| erc20.transfer          | 23.4ms  | 1.9824s        | 460.8ms     | 22.4ms  | 11ms   |
+| snailtracer             | 153ms   | 17.484s        | 5.536s      | 126ms   | 57ms   |
+| ten-thousand-hashes     | 17.4ms  | 3.4624s        | 685.2ms     | 22.2ms  | 7.4ms  |
+|                         |         |                |             |         |        |
+| **sum**                 | 228.4ms | 25.717s        | 7.4736s     | 201.8ms | 89.8ms |
+| **relative**            | 2.54x   | 286x           | 83.2x       | 2.25x   | 1.00x  |
 
 To reproduce these results, check out [usage with the evm-bench suite below](#with-the-evm-bench-suite).
 
