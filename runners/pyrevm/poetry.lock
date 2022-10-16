@@ -381,7 +381,7 @@ pytest = "^7.1.3"
 type = "git"
 url = "https://github.com/gakonst/pyrevm.git"
 reference = "master"
-resolved_reference = "32f0aaf11044ff66d0def468d7d089cdb64bf588"
+resolved_reference = "cd7bcf2f141eec8c4aea6ebc742649b9a2de8b80"
 
 [[package]]
 name = "pytest"
