@@ -71,6 +71,6 @@ fn main() {
             }
         }
 
-        println!("{}", dur.as_millis())
+        println!("{}", dur.as_micros() as f64 / 1e3)
     }
 }
