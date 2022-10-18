@@ -43,14 +43,14 @@ var cmd = &cobra.Command{
 		callerAddress := common.BytesToAddress(common.FromHex("0x1000000000000000000000000000000000000001"))
 
 		config := params.MainnetChainConfig
-		rules := config.Rules(config.BerlinBlock, false)
+		rules := config.Rules(config.LondonBlock, false)
 		defaultGenesis := core.DefaultGenesisBlock()
 		genesis := &core.Genesis{
 			Config:     config,
 			Coinbase:   defaultGenesis.Coinbase,
 			Difficulty: defaultGenesis.Difficulty,
 			GasLimit:   defaultGenesis.GasLimit,
-			Number:     config.BerlinBlock.Uint64(),
+			Number:     config.LondonBlock.Uint64(),
 			Timestamp:  defaultGenesis.Timestamp,
 			Alloc:      defaultGenesis.Alloc,
 		}
@@ -59,7 +59,7 @@ var cmd = &cobra.Command{
 		check(err)
 
 		zeroValue := big.NewInt(0)
-		gasLimit := uint64(1000000000)
+		gasLimit := ^uint64(0)
 
 		createMsg := types.NewMessage(callerAddress, &zeroAddress, 0, zeroValue, gasLimit, zeroValue, zeroValue, zeroValue, contractCodeBytes, types.AccessList{}, false)
 		statedb.PrepareAccessList(callerAddress, &zeroAddress, vm.ActivePrecompiles(rules), createMsg.AccessList())
@@ -67,7 +67,7 @@ var cmd = &cobra.Command{
 		blockContext := core.NewEVMBlockContext(genesis.ToBlock().Header(), nil, &zeroAddress)
 		txContext := core.NewEVMTxContext(createMsg)
 		evm := vm.NewEVM(blockContext, txContext, statedb, config, vm.Config{})
-		_, contractAddress, _, err := evm.Create(vm.AccountRef(callerAddress), contractCodeBytes, 1000000000, new(big.Int))
+		_, contractAddress, _, err := evm.Create(vm.AccountRef(callerAddress), contractCodeBytes, gasLimit, new(big.Int))
 		check(err)
 
 		msg := types.NewMessage(callerAddress, &contractAddress, 1, zeroValue, gasLimit, zeroValue, zeroValue, zeroValue, calldataBytes, types.AccessList{}, false)
@@ -79,7 +79,7 @@ var cmd = &cobra.Command{
 			_, _, err := evm.Call(vm.AccountRef(callerAddress), *msg.To(), msg.Data(), msg.Gas(), msg.Value())
 			timeTaken := time.Since(start)
 
-			fmt.Println(timeTaken.Milliseconds())
+			fmt.Println(float64(timeTaken.Microseconds()) / 1e3)
 
 			check(err)
 
