@@ -6,16 +6,16 @@
 
 evm-bench makes it easy to compare EVM performance in a scalable, standardized, and portable way.
 
-|                         | geth    | py-evm.cpython | py-evm.pypy | pyrevm  | revm   |
-| ----------------------- | ------- | -------------- | ----------- | ------- | ------ |
-| erc20.approval-transfer | 18.2ms  | 1.3636s        | 439ms       | 16.8ms  | 9ms    |
-| erc20.mint              | 16.4ms  | 1.4246s        | 352.6ms     | 14.4ms  | 5.4ms  |
-| erc20.transfer          | 23.4ms  | 1.9824s        | 460.8ms     | 22.4ms  | 11ms   |
-| snailtracer             | 153ms   | 17.484s        | 5.536s      | 126ms   | 57ms   |
-| ten-thousand-hashes     | 17.4ms  | 3.4624s        | 685.2ms     | 22.2ms  | 7.4ms  |
-|                         |         |                |             |         |        |
-| **sum**                 | 228.4ms | 25.717s        | 7.4736s     | 201.8ms | 89.8ms |
-| **relative**            | 2.54x   | 286x           | 83.2x       | 2.25x   | 1.00x  |
+|                         | evmone | geth    | py-evm.cpython | py-evm.pypy | pyrevm  | revm   |
+| ----------------------- | ------ | ------- | -------------- | ----------- | ------- | ------ |
+| erc20.approval-transfer | 7ms    | 17.4ms  | 1.373s         | 438.6ms     | 16.2ms  | 10.2ms |
+| erc20.mint              | 5ms    | 17.2ms  | 1.3878s        | 355.8ms     | 14.4ms  | 6.2ms  |
+| erc20.transfer          | 8.2ms  | 24.4ms  | 1.947s         | 451.4ms     | 22.4ms  | 11.4ms |
+| snailtracer             | 42ms   | 151ms   | 17.634s        | 4.385s      | 125ms   | 57ms   |
+| ten-thousand-hashes     | 2.4ms  | 13.2ms  | 1.9132s        | 329.2ms     | 10.4ms  | 4ms    |
+|                         |        |         |                |             |         |        |
+| **sum**                 | 64.6ms | 223.2ms | 24.255s        | 5.96s       | 188.4ms | 88.8ms |
+| **relative**            | 1.00x  | 3.46x   | 375x           | 92.3x       | 2.92x   | 1.37x  |
 
 To reproduce these results, check out [usage with the evm-bench suite below](#with-the-evm-bench-suite).
 
