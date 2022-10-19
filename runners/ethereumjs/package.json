@@ -4,7 +4,7 @@
     "nodejs-runner": "ts-node --transpile-only runner.ts"
   },
   "dependencies": {
-    "@ethereumjs/common": "^3.0.0",
+    "@ethereumjs/common": "3.0.1",
     "@ethereumjs/evm": "^1.0.0",
     "@ethereumjs/util": "^8.0.0",
     "@ethereumjs/vm": "^6.0.0",
