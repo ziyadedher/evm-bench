@@ -1,0 +1,41 @@
+{
+  "folders": [
+    {
+      "path": "../runners/revm"
+    },
+    {
+      "path": "../runners/pyrevm-ruint"
+    },
+    {
+      "path": "../runners/pyrevm"
+    },
+    {
+      "path": "../runners/py-evm"
+    },
+    {
+      "path": "../runners/geth"
+    },
+    {
+      "path": "../runners/evmone"
+    },
+    {
+      "path": "../runners/ethereumjs"
+    },
+    {
+      "path": ".."
+    }
+  ],
+  "settings": {
+    "rust-analyzer.linkedProjects": [
+      "./Cargo.toml",
+      "./runners/revm/Cargo.toml"
+    ],
+    "files.associations": {
+      "unordered_map": "cpp",
+      "ostream": "cpp",
+      "iostream": "cpp",
+      "*.tcc": "cpp",
+      "chrono": "cpp"
+    }
+  }
+}
