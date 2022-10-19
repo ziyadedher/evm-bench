@@ -59,6 +59,10 @@ struct Args {
     #[arg(long, default_value = "pypy3")]
     pypy_executable: PathBuf,
 
+    /// Path to a NPM executable (this is used for runners)
+    #[arg(long, default_value = "npm")]
+    npm_executable: PathBuf,
+
     /// Path to benchmark metadata schema
     #[arg(long, default_value = "./benchmarks/schema.json")]
     benchmark_metadata_schema: PathBuf,
@@ -99,6 +103,7 @@ fn main() {
         let _ = validate_executable("poetry", &PathBuf::from("poetry"))?;
         let _ = validate_executable("python3", &PathBuf::from(args.cpython_executable))?;
         let _ = validate_executable("pypy3", &PathBuf::from(args.pypy_executable))?;
+        let _ = validate_executable("npm", &PathBuf::from(args.npm_executable))?;
 
         let default_calldata = hex::decode(args.default_calldata_str.to_string())?;
 
