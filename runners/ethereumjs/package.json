@@ -7,7 +7,7 @@
     "@ethereumjs/common": "3.0.1",
     "@ethereumjs/evm": "1.1.0",
     "@ethereumjs/util": "8.0.1",
-    "@ethereumjs/vm": "^6.0.0",
+    "@ethereumjs/vm": "6.1.0",
     "@types/node": "^18.11.2",
     "commander": "^9.4.1",
     "deno": "^0.1.1",
