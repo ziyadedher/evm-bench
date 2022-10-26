@@ -6,16 +6,16 @@
 
 evm-bench makes it easy to compare EVM performance in a scalable, standardized, and portable way.
 
-|                         | ethereumjs | evmone | geth   | py-evm.cpython | py-evm.pypy | pyrevm  | revm   |
-| ----------------------- | ---------- | ------ | ------ | -------------- | ----------- | ------- | ------ |
-| erc20.approval-transfer | 1.8858s    | 7ms    | 17ms   | 1.3786s        | 424ms       | 16.2ms  | 10.4ms |
-| erc20.mint              | 3.0138s    | 5ms    | 17.6ms | 1.4406s        | 349ms       | 14.2ms  | 6ms    |
-| erc20.transfer          | 3.4688s    | 8.2ms  | 24.8ms | 1.9648s        | 453ms       | 22.2ms  | 11.4ms |
-| snailtracer             | 131.415s   | 42ms   | 153ms  | 17.399s        | 5.591s      | 124ms   | 57ms   |
-| ten-thousand-hashes     | 2.3178s    | 2.4ms  | 12.6ms | 1.902s         | 315.2ms     | 10.8ms  | 3.6ms  |
-|                         |            |        |        |                |             |         |        |
-| **sum**                 | 142.1012s  | 64.6ms | 225ms  | 24.085s        | 7.1322s     | 187.4ms | 88.4ms |
-| **relative**            | 2200x      | 1.00x  | 3.48x  | 373x           | 110x        | 2.90x   | 1.37x  |
+|                         | evmone | revm   | akula | pyrevm  | geth    | py-evm.pypy | py-evm.cpython | ethereumjs |
+| ----------------------- | ------ | ------ | ----- | ------- | ------- | ----------- | -------------- | ---------- |
+| **sum**                 | 65.8ms | 91.6ms | 101ms | 189.4ms | 232.4ms | 6.6694s     | 24.0542s       | 146.1274s  |
+| **relative**            | 1.00x  | 1.39x  | 1.54x | 2.88x   | 3.53x   | 101x        | 366x           | 2220x      |
+|                         |        |        |       |         |         |             |                |            |
+| erc20.approval-transfer | 7ms    | 10ms   | 10ms  | 16.6ms  | 17ms    | 399.6ms     | 1.386s         | 2.064s     |
+| erc20.mint              | 5ms    | 6.4ms  | 7ms   | 14.4ms  | 17.4ms  | 366.8ms     | 1.398s         | 3.1866s    |
+| erc20.transfer          | 9.6ms  | 11.4ms | 12ms  | 22.4ms  | 24.6ms  | 430.8ms     | 2.0182s        | 3.7024s    |
+| snailtracer             | 42ms   | 60ms   | 68ms  | 125ms   | 161ms   | 5.148s      | 17.3s          | 134.648s   |
+| ten-thousand-hashes     | 2.2ms  | 3.8ms  | 4ms   | 11ms    | 12.4ms  | 324.2ms     | 1.952s         | 2.5264s    |
 
 To reproduce these results, check out [usage with the evm-bench suite below](#with-the-evm-bench-suite).
 
