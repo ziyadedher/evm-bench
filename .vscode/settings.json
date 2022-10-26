@@ -1,9 +1,0 @@
-{
-  "rust-analyzer.linkedProjects": ["./Cargo.toml"],
-  "files.associations": {
-    "unordered_map": "cpp",
-    "ostream": "cpp",
-    "iostream": "cpp",
-    "*.tcc": "cpp"
-  }
-}
