@@ -130,7 +130,7 @@ pub fn print_results(results_file_path: &Path) -> Result<(), Box<dyn error::Erro
         .iter()
         .map(|(name, times)| (name.clone(), times.iter().sum::<Duration>()))
         .collect::<HashMap<String, Duration>>();
-    let mut record = vec!["sum".to_string()];
+    let mut record = vec!["**sum**".to_string()];
     record.extend(
         runner_names
             .iter()
@@ -143,7 +143,7 @@ pub fn print_results(results_file_path: &Path) -> Result<(), Box<dyn error::Erro
         .values()
         .min()
         .ok_or("could not get minimum runner time")?;
-    let mut record = vec!["relative".to_string()];
+    let mut record = vec!["**relative**".to_string()];
     record.extend(
         runner_names
             .iter()
@@ -153,7 +153,7 @@ pub fn print_results(results_file_path: &Path) -> Result<(), Box<dyn error::Erro
                         / min_runner_time.as_secs_f64(),
                 )
             })
-            .map(|val| Some(format!("{:.3?}", val?)))
+            .map(|val| Some(format!("{:.3?}x", val?)))
             .map(|s| s.unwrap_or_default()),
     );
     builder.add_record(record);
