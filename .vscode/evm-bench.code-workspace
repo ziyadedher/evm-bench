@@ -1,6 +1,9 @@
 {
   "folders": [
     {
+      "path": "../runners/akula"
+    },
+    {
       "path": "../runners/revm"
     },
     {
@@ -26,10 +29,7 @@
     }
   ],
   "settings": {
-    "rust-analyzer.linkedProjects": [
-      "./Cargo.toml",
-      "./runners/revm/Cargo.toml"
-    ],
+    "rust-analyzer.linkedProjects": ["./Cargo.toml"],
     "files.associations": {
       "unordered_map": "cpp",
       "ostream": "cpp",
