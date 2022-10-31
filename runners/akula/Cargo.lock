@@ -4,9 +4,9 @@ version = 3
 
 [[package]]
 name = "aes"
-version = "0.8.1"
+version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bfe0133578c0986e1fe3dfcd4af1cc5b2dd6c3dbf534d69916ce16a2701d40ba"
+checksum = "433cfd6710c9986c576a25ca913c39d66a6474107b406f34f91d4a8923395241"
 dependencies = [
  "cfg-if",
  "cipher",
@@ -37,7 +37,7 @@ dependencies = [
 [[package]]
 name = "akula"
 version = "0.1.0"
-source = "git+https://github.com/akula-bft/akula#ef2a2478afa01037ec7ca2e9ac2cf42c568f9bb7"
+source = "git+https://github.com/akula-bft/akula#e30f2762a912c68951a09fde12c05df60de4f7db"
 dependencies = [
  "aes",
  "anyhow",
@@ -444,9 +444,9 @@ checksum = "572f695136211188308f16ad2ca5c851a712c464060ae6974944458eb83880ba"
 
 [[package]]
 name = "byte-slice-cast"
-version = "1.2.1"
+version = "1.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "87c5fdd0166095e1d463fc6cc01aa8ce547ad77a4e84d42eb6762b084e28067e"
+checksum = "c3ac9f8b63eca6fd385229b3675f6cc0dc5c8a5c8a54a59d4f52ffd670d87b0c"
 
 [[package]]
 name = "byte-unit"
@@ -489,9 +489,9 @@ checksum = "6c58ec36aac5066d5ca17df51b3e70279f5670a72102f5752cb7e7c856adfc70"
 
 [[package]]
 name = "cc"
-version = "1.0.73"
+version = "1.0.74"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2fff2a6927b3bb87f9595d67196a70493f627687a71d87a0d692242c33f58c11"
+checksum = "581f5dba903aac52ea3feb5ec4810848460ee833876f1f9b0fdeab1f19091574"
 dependencies = [
  "jobserver",
 ]
@@ -794,12 +794,12 @@ dependencies = [
 
 [[package]]
 name = "darling"
-version = "0.14.1"
+version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4529658bdda7fd6769b8614be250cdcfc3aeb0ee72fe66f9e41e5e5eb73eac02"
+checksum = "b0dd3cd20dc6b5a876612a6e5accfe7f3dd883db6d07acfbf14c128f61550dfa"
 dependencies = [
- "darling_core 0.14.1",
- "darling_macro 0.14.1",
+ "darling_core 0.14.2",
+ "darling_macro 0.14.2",
 ]
 
 [[package]]
@@ -818,9 +818,9 @@ dependencies = [
 
 [[package]]
 name = "darling_core"
-version = "0.14.1"
+version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "649c91bc01e8b1eac09fb91e8dbc7d517684ca6be8ebc75bb9cafc894f9fdb6f"
+checksum = "a784d2ccaf7c98501746bf0be29b2022ba41fd62a2e622af997a03e9f972859f"
 dependencies = [
  "fnv",
  "ident_case",
@@ -843,11 +843,11 @@ dependencies = [
 
 [[package]]
 name = "darling_macro"
-version = "0.14.1"
+version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ddfc69c5bfcbd2fc09a0f38451d2daf0e372e367986a83906d1b0dbc88134fb5"
+checksum = "7618812407e9402654622dd402b0a89dff9ba93badd6540781526117b92aab7e"
 dependencies = [
- "darling_core 0.14.1",
+ "darling_core 0.14.2",
  "quote",
  "syn",
 ]
@@ -1670,9 +1670,9 @@ dependencies = [
 
 [[package]]
 name = "iana-time-zone"
-version = "0.1.51"
+version = "0.1.53"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f5a6ef98976b22b3b7f2f3a806f858cb862044cfa66805aa3ad84cb3d3b785ed"
+checksum = "64c122667b287044802d6ce17ee2ddf13207ed924c712de9a66a5814d5b64765"
 dependencies = [
  "android_system_properties",
  "core-foundation-sys",
@@ -2328,9 +2328,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.15.0"
+version = "1.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e82dad04139b71a90c080c8463fe0dc7902db5192d939bd0950f074d014339e1"
+checksum = "86f0b0d4bf799edbc74508c1e8bf170ff5f41238e5f8225603ca7caaae2b7860"
 
 [[package]]
 name = "opaque-debug"
@@ -2340,9 +2340,9 @@ checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 
 [[package]]
 name = "os_str_bytes"
-version = "6.3.0"
+version = "6.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9ff7415e9ae3fff1225851df9e0d9e4e5479f947619774677a63572e55e80eff"
+checksum = "3baf96e39c5359d2eb0dd6ccb42c62b91d9678aa68160d261b9e0ccbf9e9dea9"
 
 [[package]]
 name = "overload"
@@ -2455,9 +2455,9 @@ checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
 
 [[package]]
 name = "pkg-config"
-version = "0.3.25"
+version = "0.3.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1df8c4ec4b0627e53bdf214615ad287367e482558cf84b109250b37464dc03ae"
+checksum = "6ac9a59f73473f1b8d852421e59e64809f025994837ef743615c6d0c5b305160"
 
 [[package]]
 name = "ppv-lite86"
@@ -2477,9 +2477,9 @@ dependencies = [
 
 [[package]]
 name = "primitive-types"
-version = "0.12.0"
+version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5cfd65aea0c5fa0bfcc7c9e7ca828c921ef778f43d325325ec84bda371bfa75a"
+checksum = "9f3486ccba82358b11a77516035647c34ba167dfa53312630de83b12bd4f3d66"
 dependencies = [
  "fixed-hash",
  "impl-codec",
@@ -2969,7 +2969,7 @@ version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ccadfacf6cf10faad22bbadf55986bdd0856edfb5d9210aa1dcf1f516e84e93"
 dependencies = [
- "darling 0.14.1",
+ "darling 0.14.2",
  "proc-macro2",
  "quote",
  "syn",
@@ -3192,9 +3192,9 @@ checksum = "20518fe4a4c9acf048008599e464deb21beeae3d3578418951a189c235a7a9a8"
 
 [[package]]
 name = "sysinfo"
-version = "0.26.5"
+version = "0.26.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ade661fa5e048ada64ad7901713301c21d2dbc5b65ee7967de8826c111452960"
+checksum = "c6d0dedf2e65d25b365c588382be9dc3a3ee4b0ed792366cf722d174c359d948"
 dependencies = [
  "cfg-if",
  "core-foundation-sys",
