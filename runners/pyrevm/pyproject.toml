@@ -10,7 +10,7 @@ pyrevm = { git = "https://github.com/gakonst/pyrevm.git", branch = "master" }
 py-evm = "^0.6.0-alpha.1"
 
 [tool.poetry.dev-dependencies]
-mypy = "^0.982"
+mypy = "^0.990"
 black = "^22.10.0"
 
 [build-system]
