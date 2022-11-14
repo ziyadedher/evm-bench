@@ -9,7 +9,7 @@ python = "^3.9"
 py-evm = "^0.6.0-alpha.1"
 
 [tool.poetry.dev-dependencies]
-mypy = "^0.990"
+mypy = "^0.991"
 black = "^22.10.0"
 
 [build-system]
