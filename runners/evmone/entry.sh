@@ -4,6 +4,7 @@ set -e
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 cd $SCRIPT_DIR
-make build-opt --silent
-LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:lib/ ./runner $@
-
+{
+  cmake -S . -B build && cmake --build build --parallel
+} > /dev/null
+build/runner $@
