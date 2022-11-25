@@ -1,5 +1,5 @@
 #include <evmone/evmone.h>
-#include <CLI/CLI11.hpp>
+#include <CLI/CLI.hpp>
 #include <evmc/evmc.hpp>
 #include <evmc/hex.hpp>
 #include <evmc/mocked_host.hpp>
