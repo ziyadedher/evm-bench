@@ -6,7 +6,7 @@
   "dependencies": {
     "@ethereumjs/common": "3.0.2",
     "@ethereumjs/evm": "1.2.3",
-    "@ethereumjs/util": "8.0.2",
+    "@ethereumjs/util": "8.0.3",
     "@ethereumjs/vm": "6.2.0",
     "@types/node": "18.11.15",
     "commander": "9.4.1",
