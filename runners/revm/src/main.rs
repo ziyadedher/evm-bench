@@ -2,8 +2,7 @@ use std::{fs, path::PathBuf, str::FromStr, time::Instant};
 
 use bytes::Bytes;
 use clap::Parser;
-use primitive_types::H160;
-use revm::{InMemoryDB, Return, TransactOut, TransactTo};
+use revm::{InMemoryDB, Return, TransactOut, TransactTo, B160};
 
 extern crate alloc;
 
@@ -29,7 +28,7 @@ const CALLER_ADDRESS: &str = "0x1000000000000000000000000000000000000001";
 fn main() {
     let args = Args::parse();
 
-    let caller_address = H160::from_str(CALLER_ADDRESS).unwrap();
+    let caller_address = B160::from_str(CALLER_ADDRESS).unwrap();
 
     let contract_code: Bytes =
         hex::decode(fs::read_to_string(args.contract_code_path).expect("unable to open file"))
