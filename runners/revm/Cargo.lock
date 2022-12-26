@@ -340,9 +340,9 @@ dependencies = [
 
 [[package]]
 name = "is-terminal"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "927609f78c2913a6f6ac3c27a4fe87f43e2a35367c0c4b0f8265e8f49a104330"
+checksum = "28dfb6c8100ccc63462345b67d1bbc3679177c75ee4bf59bf29c8b1d110b8189"
 dependencies = [
  "hermit-abi",
  "io-lifetimes",
@@ -370,9 +370,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.138"
+version = "0.2.139"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db6d7e329c562c5dfab7a46a2afabc8b987ab9a4834c9d1ca04dc54c1546cef8"
+checksum = "201de327520df007757c1f0adce6e827fe8562fbc28bfd9c15571c66ca1f5f79"
 
 [[package]]
 name = "linux-raw-sys"
@@ -636,7 +636,7 @@ dependencies = [
 [[package]]
 name = "revm"
 version = "2.3.1"
-source = "git+https://github.com/bluealloy/revm#2cb991091d32330cfe085320891737186947ce5a"
+source = "git+https://github.com/bluealloy/revm#488ef8ab62f433b1b434d2d81bc744a2db8f735f"
 dependencies = [
  "arrayref",
  "auto_impl",
@@ -644,6 +644,7 @@ dependencies = [
  "derive_more",
  "fixed-hash 0.8.0",
  "hashbrown",
+ "hex",
  "hex-literal",
  "num_enum",
  "revm_precompiles",
@@ -655,7 +656,7 @@ dependencies = [
 [[package]]
 name = "revm_precompiles"
 version = "1.1.2"
-source = "git+https://github.com/bluealloy/revm#2cb991091d32330cfe085320891737186947ce5a"
+source = "git+https://github.com/bluealloy/revm#488ef8ab62f433b1b434d2d81bc744a2db8f735f"
 dependencies = [
  "bytes",
  "hashbrown",
@@ -750,18 +751,18 @@ dependencies = [
 
 [[package]]
 name = "secp256k1"
-version = "0.24.2"
+version = "0.25.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d9512ffd81e3a3503ed401f79c33168b9148c75038956039166cd750eaa037c3"
+checksum = "550fc3b723a478be77bf74718947cdcdd75144d508aaa70f0a320036905df2a8"
 dependencies = [
  "secp256k1-sys",
 ]
 
 [[package]]
 name = "secp256k1-sys"
-version = "0.6.1"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "83080e2c2fc1006e625be82e5d1eb6a43b7fd9578b617fcc55814daf286bba4b"
+checksum = "8058e28ae464daf5ac14c5c0f78110b58616e796c4e4e28cfcca38fdb13d8f22"
 dependencies = [
  "cc",
 ]
