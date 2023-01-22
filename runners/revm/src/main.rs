@@ -2,7 +2,12 @@ use std::{fs, path::PathBuf, str::FromStr, time::Instant};
 
 use bytes::Bytes;
 use clap::Parser;
-use revm::{InMemoryDB, Return, TransactOut, TransactTo, B160};
+use revm_interpreter::{
+    analysis::to_analysed,
+    primitives::{Bytecode, Env, LatestSpec, TransactTo, B160},
+    Contract, DummyHost, InstructionResult, Interpreter,
+};
+//use revm-interpreter::{}
 
 extern crate alloc;
 
@@ -39,32 +44,40 @@ fn main() {
         .into();
 
     // Set up the EVM with a database and create the contract
-    let mut evm = revm::new();
-    evm.database(InMemoryDB::default());
-    evm.env.tx.caller = caller_address;
-    evm.env.tx.transact_to = TransactTo::create();
-    evm.env.tx.data = contract_code;
-    let res = evm.transact_commit();
-    match res.exit_reason {
-        Return::Continue => {}
+    let mut env = Env::default();
+    env.tx.caller = caller_address;
+    env.tx.transact_to = TransactTo::create();
+    env.tx.data = calldata.clone();
+
+    let bytecode = to_analysed::<LatestSpec>(Bytecode::new_raw(contract_code));
+
+    // revm interpreter. (rakita note: should be simplified in one of next version.)
+    let contract = Contract::new_env::<LatestSpec>(&env, bytecode);
+    let mut host = DummyHost::new(env.clone());
+    let mut interpreter = Interpreter::new(contract, u64::MAX, false);
+    let reason = interpreter.run::<_, LatestSpec>(&mut host);
+
+    match reason {
+        InstructionResult::Stop | InstructionResult::Return => {}
         reason => panic!("unexpected exit reason while creating: {:?}", reason),
     }
-    let contract_address = match res.out {
-        TransactOut::Create(_, Some(addr)) => addr,
-        _ => panic!("could not get contract address"),
-    };
+    let created_contract = interpreter.return_value();
 
-    evm.env.tx.caller = caller_address;
-    evm.env.tx.transact_to = TransactTo::Call(contract_address);
-    evm.env.tx.data = calldata;
+    env.tx.caller = caller_address;
+    env.tx.data = calldata;
+
+    let created_bytecode = to_analysed::<LatestSpec>(Bytecode::new_raw(created_contract));
+    let contract = Contract::new_env::<LatestSpec>(&env, created_bytecode);
 
     for _ in 0..args.num_runs {
+        let mut interpreter = revm_interpreter::Interpreter::new(contract.clone(), u64::MAX, false);
         let timer = Instant::now();
-        let (res, _) = evm.transact();
+        let reason = interpreter.run::<_, LatestSpec>(&mut host);
         let dur = timer.elapsed();
+        host.clear();
 
-        match res.exit_reason {
-            Return::Return | Return::Stop => (),
+        match reason {
+            InstructionResult::Return | InstructionResult::Stop => (),
             reason => {
                 panic!("unexpected exit reason while benchmarking: {:?}", reason)
             }
