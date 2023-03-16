@@ -18,7 +18,7 @@ clap = { version = "4.1.8", features = ["derive"] }
 env_logger = "0.10.0"
 glob = "0.3.1"
 hex = "0.4.3"
-jsonschema = "0.16.1"
+jsonschema = "0.17.0"
 log = "0.4.17"
 serde = "1.0.156"
 serde_json = "1.0.94"
