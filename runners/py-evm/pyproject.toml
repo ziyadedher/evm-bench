@@ -10,7 +10,7 @@ py-evm = "^0.6.0-alpha.1"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.991"
-black = "^22.10.0"
+black = "^23.0.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
