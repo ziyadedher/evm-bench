@@ -6,16 +6,16 @@
 
 evm-bench makes it easy to compare EVM performance in a scalable, standardized, and portable way.
 
-|                         | evmone | revm   | pyrevm | geth   | py-evm.pypy | py-evm.cpython | ethereumjs |
-| ----------------------- | ------ | ------ | ------ | ------ | ----------- | -------------- | ---------- |
-| **sum**                 | 66ms   | 84.8ms | 194ms  | 235ms  | 7.201s      | 19.0886s       | 146.3218s  |
-| **relative**            | 1.000x | 1.285x | 2.939x | 3.561x | 109.106x    | 289.221x       | 2216.997x  |
-|                         |        |        |        |        |             |                |            |
-| erc20.approval-transfer | 7ms    | 9.6ms  | 16.2ms | 17ms   | 425.2ms     | 1.13s          | 2.0006s    |
-| erc20.mint              | 5ms    | 6.4ms  | 14.8ms | 17.2ms | 334ms       | 1.1554s        | 3.1352s    |
-| erc20.transfer          | 8.6ms  | 11.6ms | 22.8ms | 24.6ms | 449.2ms     | 1.6172s        | 3.6564s    |
-| snailtracer             | 43ms   | 53ms   | 128ms  | 163ms  | 5.664s      | 13.675s        | 135.059s   |
-| ten-thousand-hashes     | 2.4ms  | 4.2ms  | 12.2ms | 13.2ms | 328.6ms     | 1.511s         | 2.4706s    |
+|                         | evmone | revm    | pyrevm | geth    | py-evm.cpython | ethereumjs |
+| ----------------------- | ------ | ------- | ------ | ------- | -------------- | ---------- |
+| **sum**                 | 69.2ms | 100.4ms | 218ms  | 231.4ms | 21.7272s       | 31.3376s   |
+| **relative**            | 1.000x | 1.451x  | 3.150x | 3.344x  | 313.977x       | 452.855x   |
+|                         |        |         |        |         |                |            |
+| erc20.approval-transfer | 7.4ms  | 10.2ms  | 21.8ms | 17.4ms  | 1.374s         | 1.8832s    |
+| erc20.mint              | 5.2ms  | 6.2ms   | 16.8ms | 18.4ms  | 1.2822s        | 2.8656s    |
+| erc20.transfer          | 8.6ms  | 12ms    | 24.4ms | 26ms    | 1.8158s        | 3.3676s    |
+| snailtracer             | 45ms   | 67ms    | 143ms  | 157ms   | 15.455s        | 21.592s    |
+| ten-thousand-hashes     | 3ms    | 5ms     | 12ms   | 12.6ms  | 1.8002s        | 1.6292s    |
 
 To reproduce these results, check out [usage with the evm-bench suite below](#with-the-evm-bench-suite).
 
