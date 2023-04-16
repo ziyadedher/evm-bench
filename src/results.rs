@@ -9,7 +9,7 @@ use std::{
 
 use chrono;
 use serde::{Deserialize, Serialize};
-use tabled::{builder::Builder, Style};
+use tabled::{builder::Builder, settings::Style};
 
 use crate::{
     metadata::{Benchmark, Runner},
@@ -138,7 +138,7 @@ pub fn print_results(results_file_path: &Path) -> Result<(), Box<dyn error::Erro
             .map(|val| Some(format!("{:?}", val?)))
             .map(|s| s.unwrap_or_default()),
     );
-    builder.add_record(record);
+    builder.push_record(record);
     let min_runner_time = average_runner_times
         .values()
         .min()
@@ -156,7 +156,7 @@ pub fn print_results(results_file_path: &Path) -> Result<(), Box<dyn error::Erro
             .map(|val| Some(format!("{:.3?}x", val?)))
             .map(|s| s.unwrap_or_default()),
     );
-    builder.add_record(record);
+    builder.push_record(record);
 
     for (benchmark_name, benchmark_runs) in runs.iter() {
         let vals = runner_names.iter().map(|runner_name| {
@@ -178,12 +178,12 @@ pub fn print_results(results_file_path: &Path) -> Result<(), Box<dyn error::Erro
             vals.map(|val| Some(format!("{:?}", val?)))
                 .map(|s| s.unwrap_or_default()),
         );
-        builder.add_record(record);
+        builder.push_record(record);
     }
 
     let mut columns = vec!["".to_owned()];
     columns.extend(runner_names);
-    builder.set_columns(columns);
+    builder.set_header(columns);
 
     let mut table = builder.build();
     table.with(Style::markdown());
