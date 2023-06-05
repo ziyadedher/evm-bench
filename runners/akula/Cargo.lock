@@ -46,9 +46,9 @@ dependencies = [
 
 [[package]]
 name = "aho-corasick"
-version = "1.0.1"
+version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "67fc08ce920c31afb70f013dcce1bfc3a3195de6a228474e45e1f145b36f8d04"
+checksum = "43f6cb1bf222025340178f382c426f13757b2960e89779dfcb319c32542a5a41"
 dependencies = [
  "memchr",
 ]
@@ -161,6 +161,12 @@ dependencies = [
  "vergen",
  "walkdir",
 ]
+
+[[package]]
+name = "android-tzdata"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e999941b234f3131b00bc13c22d06e8c5ff726d1b6318ac7eb276997bbb4fef0"
 
 [[package]]
 name = "android_system_properties"
@@ -595,12 +601,12 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "chrono"
-version = "0.4.24"
+version = "0.4.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4e3c5919066adf22df73762e50cffcde3a758f2a848b113b586d1f86728b673b"
+checksum = "ec837a71355b28f6556dbd569b37b3f363091c0bd4b2e735674521b4c5fd9bc5"
 dependencies = [
+ "android-tzdata",
  "iana-time-zone",
- "num-integer",
  "num-traits",
  "serde",
  "winapi",
@@ -1097,14 +1103,14 @@ dependencies = [
 
 [[package]]
 name = "enum-as-inner"
-version = "0.5.2"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "356538125fac8ab67d41d09b010daa294659f0b6279a175a947ad5c254b6114c"
+checksum = "c9720bba047d567ffc8a3cba48bf19126600e249ab7f128e9233e6376976a116"
 dependencies = [
  "heck",
  "proc-macro2",
  "quote",
- "syn 2.0.18",
+ "syn 1.0.109",
 ]
 
 [[package]]
@@ -1209,7 +1215,7 @@ dependencies = [
 [[package]]
 name = "ethereum-interfaces"
 version = "0.1.0"
-source = "git+https://github.com/ledgerwatch/interfaces#f3dc88ab8729caafdb5b6fbd0034cbdcd39a8409"
+source = "git+https://github.com/ledgerwatch/interfaces#cdc6e215fb3ed422ebe7afe3bafe70986ccf4d25"
 dependencies = [
  "arrayref",
  "ethereum-types",
@@ -2203,9 +2209,9 @@ checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 
 [[package]]
 name = "libc"
-version = "0.2.144"
+version = "0.2.145"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2b00cc1c228a6782d0f076e7b232802e0c5689d41bb5df366f2a6b6621cfdfe1"
+checksum = "fc86cde3ff845662b8f4ef6cb50ea0e20c524eb3d29ae048287e06a1b3fa6a81"
 
 [[package]]
 name = "libgit2-sys"
@@ -2387,9 +2393,9 @@ checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
 
 [[package]]
 name = "mio"
-version = "0.8.7"
+version = "0.8.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eebffdb73fe72e917997fad08bdbf31ac50b0fa91cec93e69a0662e4264d454c"
+checksum = "927a765cd3fc26206e66b296465fa9d3e5ab003e651c1b3c060e7956d96b19d2"
 dependencies = [
  "libc",
  "wasi",
@@ -2524,9 +2530,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.17.1"
+version = "1.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b7e5500299e16ebb147ae15a00a942af264cf3688f47923b8fc2cd5858f23ad3"
+checksum = "dd8b5dd2ae5ed71462c540258bedcb51965123ad7e7ccf4b9a8cafaa4a63576d"
 
 [[package]]
 name = "opaque-debug"
@@ -2936,7 +2942,7 @@ version = "1.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "81ca098a9821bd52d6b24fd8b10bd081f47d39c22778cafaa75a2857a62c6390"
 dependencies = [
- "aho-corasick 1.0.1",
+ "aho-corasick 1.0.2",
  "memchr",
  "regex-syntax 0.7.2",
 ]
@@ -3986,7 +3992,7 @@ dependencies = [
  "async-trait",
  "cfg-if",
  "data-encoding",
- "enum-as-inner 0.5.2",
+ "enum-as-inner 0.5.1",
  "futures-channel",
  "futures-io",
  "futures-util",
@@ -4498,9 +4504,9 @@ dependencies = [
 
 [[package]]
 name = "xml-rs"
-version = "0.8.13"
+version = "0.8.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d8f380ae16a37b30e6a2cf67040608071384b1450c189e61bea3ff57cde922d"
+checksum = "52839dc911083a8ef63efa4d039d1f58b5e409f923e44c80828f206f66e5541c"
 
 [[package]]
 name = "xmltree"
