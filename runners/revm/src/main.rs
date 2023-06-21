@@ -7,7 +7,6 @@ use revm_interpreter::{
     primitives::{Bytecode, Env, LatestSpec, TransactTo, B160},
     Contract, DummyHost, InstructionResult, Interpreter,
 };
-//use revm-interpreter::{}
 
 extern crate alloc;
 
@@ -49,10 +48,10 @@ fn main() {
     env.tx.transact_to = TransactTo::create();
     env.tx.data = calldata.clone();
 
-    let bytecode = to_analysed::<LatestSpec>(Bytecode::new_raw(contract_code));
+    let bytecode = to_analysed(Bytecode::new_raw(contract_code));
 
     // revm interpreter. (rakita note: should be simplified in one of next version.)
-    let contract = Contract::new_env::<LatestSpec>(&env, bytecode);
+    let contract = Contract::new_env(&env, bytecode);
     let mut host = DummyHost::new(env.clone());
     let mut interpreter = Interpreter::new(contract, u64::MAX, false);
     let reason = interpreter.run::<_, LatestSpec>(&mut host);
@@ -66,8 +65,8 @@ fn main() {
     env.tx.caller = caller_address;
     env.tx.data = calldata;
 
-    let created_bytecode = to_analysed::<LatestSpec>(Bytecode::new_raw(created_contract));
-    let contract = Contract::new_env::<LatestSpec>(&env, created_bytecode);
+    let created_bytecode = to_analysed(Bytecode::new_raw(created_contract));
+    let contract = Contract::new_env(&env, created_bytecode);
 
     for _ in 0..args.num_runs {
         let mut interpreter = revm_interpreter::Interpreter::new(contract.clone(), u64::MAX, false);

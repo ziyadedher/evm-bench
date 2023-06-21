@@ -279,18 +279,6 @@ dependencies = [
 
 [[package]]
 name = "fixed-hash"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cfcf0ed7fe52a17a03854ec54a9f76d6d84508d1c0e66bc1793301c73fc8493c"
-dependencies = [
- "byteorder",
- "rand",
- "rustc-hex",
- "static_assertions",
-]
-
-[[package]]
-name = "fixed-hash"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "835c052cb0c08c1acf6ffd71c022172e18723949c8282f2b9f27efbc51e64534"
@@ -363,9 +351,9 @@ checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
 name = "hex-literal"
-version = "0.3.4"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ebdb29d2ea9ed0083cd8cece49bbd968021bd99b0849edb4a9a7ee0fdf6a4e0"
+checksum = "6fe2267d4ed49bc07b63801559be28c718ea06c4738b7a03c94df7386d2cde46"
 
 [[package]]
 name = "impl-codec"
@@ -496,24 +484,13 @@ checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 
 [[package]]
 name = "primitive-types"
-version = "0.11.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e28720988bff275df1f51b171e1b2a18c30d194c4d2b61defdacecd625a5d94a"
-dependencies = [
- "fixed-hash 0.7.0",
- "impl-codec",
- "impl-rlp",
- "uint",
-]
-
-[[package]]
-name = "primitive-types"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9f3486ccba82358b11a77516035647c34ba167dfa53312630de83b12bd4f3d66"
 dependencies = [
- "fixed-hash 0.8.0",
+ "fixed-hash",
  "impl-codec",
+ "impl-rlp",
  "uint",
 ]
 
@@ -607,35 +584,32 @@ dependencies = [
 
 [[package]]
 name = "revm-interpreter"
-version = "3.0.0"
-source = "git+https://github.com/bluealloy/revm?rev=3fda52e#3fda52ecdcdc0767697a020fdc0ffb8b2f433158"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2f408c834f251dc33ca424b027c132f2cfe541335c5d9895e04d2987f9cfd071"
 dependencies = [
- "bytes",
  "derive_more",
  "enumn",
- "fixed-hash 0.8.0",
- "hashbrown 0.13.2",
- "hex",
- "hex-literal",
  "revm-primitives",
- "rlp",
- "ruint",
  "sha3",
 ]
 
 [[package]]
 name = "revm-primitives"
-version = "3.0.0"
-source = "git+https://github.com/bluealloy/revm?rev=3fda52e#3fda52ecdcdc0767697a020fdc0ffb8b2f433158"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "180427e1169b860ab63eaa5bcff158010073646abf3312aed11a1d7aa1aa8291"
 dependencies = [
  "auto_impl",
+ "bitvec",
  "bytes",
  "derive_more",
  "enumn",
- "fixed-hash 0.8.0",
+ "fixed-hash",
  "hashbrown 0.13.2",
  "hex",
  "hex-literal",
+ "primitive-types",
  "rlp",
  "ruint",
  "sha3",
@@ -658,7 +632,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9d470e29e933dac4101180fd6574971892315c414cf2961a192729089687cc9b"
 dependencies = [
  "derive_more",
- "primitive-types 0.12.1",
+ "primitive-types",
  "rlp",
  "ruint-macro",
  "rustc_version",
@@ -678,7 +652,7 @@ dependencies = [
  "bytes",
  "clap",
  "hex",
- "primitive-types 0.11.1",
+ "primitive-types",
  "revm-interpreter",
 ]
 
