@@ -81,6 +81,7 @@ int main(int argc, char** argv) {
   call_msg.sender = CALLER_ADDRESS;
 
   for (int i = 0; i < num_runs; i++) {
+    evmc::MockedHost host;
     auto start = std::chrono::steady_clock::now();
     auto call_result =
         evmc_execute(vm, &host.get_interface(), (evmc_host_context*)&host,
