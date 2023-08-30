@@ -1,4 +1,4 @@
-use std::{fs, path::PathBuf, str::FromStr, time::Instant};
+use std::{str::FromStr, time::Instant};
 
 use bytes::Bytes;
 use clap::Parser;
@@ -47,10 +47,11 @@ fn main() {
     env.tx.transact_to = TransactTo::create();
     env.tx.data = calldata.clone();
 
-    let bytecode = to_analysed::<LatestSpec>(Bytecode::new_raw(contract_code));
+    let bytecode = to_analysed(Bytecode::new_raw(contract_code));
+    let bytecode_hash = bytecode.hash_slow();
 
     // revm interpreter. (rakita note: should be simplified in one of next version.)
-    let contract = Contract::new_env::<LatestSpec>(&env, bytecode);
+    let contract = Box::new(Contract::new_env(&env, bytecode, bytecode_hash));
     let mut host = DummyHost::new(env.clone());
     let mut interpreter = Interpreter::new(contract, u64::MAX, false);
     let reason = interpreter.run::<_, LatestSpec>(&mut host);
@@ -64,8 +65,13 @@ fn main() {
     env.tx.caller = caller_address;
     env.tx.data = calldata;
 
-    let created_bytecode = to_analysed::<LatestSpec>(Bytecode::new_raw(created_contract));
-    let contract = Contract::new_env::<LatestSpec>(&env, created_bytecode);
+    let created_bytecode = to_analysed(Bytecode::new_raw(created_contract));
+    let created_bytecode_hash = created_bytecode.hash_slow();
+    let contract = Box::new(Contract::new_env(
+        &env,
+        created_bytecode,
+        created_bytecode_hash,
+    ));
 
     for _ in 0..args.num_runs {
         let mut interpreter = revm_interpreter::Interpreter::new(contract.clone(), u64::MAX, false);

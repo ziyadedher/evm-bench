@@ -6,7 +6,7 @@ use std::{
 
 use anyhow::Context;
 use bollard::{image::BuildImageOptions, Docker};
-use futures::{FutureExt, StreamExt, TryStreamExt};
+use futures::{FutureExt, StreamExt};
 use serde::{Deserialize, Serialize};
 
 const RUNNER_METADATA_PATTERN: &str = "**/*.runner.json";
@@ -135,22 +135,23 @@ pub async fn build(runners: &Path, docker: &Docker) -> anyhow::Result<Vec<Runner
                     .map({
                         let tag = tag.clone();
                         move |(success, logs)| {
-                            log::trace!("[{tag}] build logs\n{logs}");
                             if success {
                                 log::debug!(
                                     "[{tag}] successfully built runner ({}) image",
                                     metadata.name,
                                 );
+                                log::trace!("[{tag}] build logs\n{logs}");
                                 Some(Runner {
                                     identifier: metadata.name.clone(),
                                     metadata,
                                     docker_image_tag: tag.to_string(),
                                 })
                             } else {
-                                log::debug!(
+                                log::warn!(
                                     "[{tag}] failed to build runner ({}) image, skipping...",
                                     metadata.name
                                 );
+                                log::debug!("[{tag}] build logs\n{logs}");
                                 None
                             }
                         }

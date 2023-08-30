@@ -2,7 +2,6 @@ use std::{
     collections::BTreeMap,
     fs::File,
     path::{Path, PathBuf},
-    str::FromStr,
 };
 
 use anyhow::Context;

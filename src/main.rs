@@ -9,12 +9,11 @@ use std::path::PathBuf;
 use anyhow::Context;
 use bollard::{
     container::{self, CreateContainerOptions},
-    exec::CreateExecOptions,
     Docker,
 };
 use clap::Parser;
 use ethers_core::utils::hex::ToHex;
-use futures::{StreamExt, TryStreamExt};
+use futures::TryStreamExt;
 
 use crate::{benchmarks::compile, runners::build};
 
@@ -44,7 +43,7 @@ async fn main() -> anyhow::Result<()> {
     let docker_version = docker
         .version()
         .await
-        .context("could not get getting Docker version")?;
+        .context("could not get Docker version")?;
     log::info!(
         "connected to Docker daemon with version {} (api: {}, os/arch: {}/{})",
         docker_version.version.unwrap_or_default(),
@@ -64,7 +63,7 @@ async fn main() -> anyhow::Result<()> {
             err
         })?;
 
-    let results: Vec<_> = futures::future::join_all(runners.iter().flat_map(|runner| {
+    let _results: Vec<_> = futures::future::join_all(runners.iter().flat_map(|runner| {
         benchmarks.iter().map(|benchmark| async {
             let container_name =
                 format!("emv-bench-{}-{}", runner.identifier, benchmark.identifier);
