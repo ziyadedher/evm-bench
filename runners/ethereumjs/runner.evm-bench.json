@@ -1,5 +1,0 @@
-{
-  "$schema": "../schema.json",
-  "name": "ethereumjs",
-  "entry": "entry.sh"
-}

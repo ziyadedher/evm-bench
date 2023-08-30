@@ -1,8 +1,0 @@
-{
-  "$schema": "../../schema.json",
-  "name": "erc20.mint",
-  "contract": "ERC20Mint.sol",
-  "build-context": "..",
-  "num-runs": 5,
-  "calldata": "30627b7c"
-}

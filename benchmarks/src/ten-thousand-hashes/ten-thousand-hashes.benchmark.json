@@ -1,0 +1,5 @@
+{
+  "$schema": "../../benchmark.schema.json",
+  "name": "ten-thousand-hashes",
+  "contract": "TenThousandHashes.sol"
+}

@@ -7,17 +7,16 @@ use revm_interpreter::{
     primitives::{Bytecode, Env, LatestSpec, TransactTo, B160},
     Contract, DummyHost, InstructionResult, Interpreter,
 };
-//use revm-interpreter::{}
 
 extern crate alloc;
 
-/// Revolutionary EVM (revm) runner interface
+/// revm runner interface
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    /// Path to the hex contract code to deploy and run
+    /// Hex of the contract code to deploy and run
     #[arg(long)]
-    contract_code_path: PathBuf,
+    contract_code: String,
 
     /// Hex of calldata to use when calling the contract
     #[arg(long)]
@@ -35,10 +34,9 @@ fn main() {
 
     let caller_address = B160::from_str(CALLER_ADDRESS).unwrap();
 
-    let contract_code: Bytes =
-        hex::decode(fs::read_to_string(args.contract_code_path).expect("unable to open file"))
-            .expect("could not hex decode contract code")
-            .into();
+    let contract_code: Bytes = hex::decode(args.contract_code)
+        .expect("could not hex decode contract code")
+        .into();
     let calldata: Bytes = hex::decode(args.calldata)
         .expect("could not hex decode calldata")
         .into();
@@ -79,7 +77,7 @@ fn main() {
         match reason {
             InstructionResult::Return | InstructionResult::Stop => (),
             reason => {
-                panic!("unexpected exit reason while benchmarking: {:?}", reason)
+                panic!("unexpected exit reason while benchmarking: {reason:?}")
             }
         }
 

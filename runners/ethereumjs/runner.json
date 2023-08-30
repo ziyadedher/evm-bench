@@ -1,0 +1,5 @@
+{
+  "$schema": "../runner.schema.json",
+  "name": "ethereumjs",
+  "entry": "entry.sh"
+}

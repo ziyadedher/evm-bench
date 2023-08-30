@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "https://ziyadedher.com/evm-bench/runner.schema.json",
+  "title": "emv-bench runner metadata",
+  "description": "Describes an individual runner in the evm-bench system.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "description": "Unique name for this runner.",
+      "type": "string"
+    },
+    "dockerfile": {
+      "description": "Path to a Dockerfile that will be used to build the runner image. Can be relative to the directory containing this metadata file.",
+      "type": "string",
+      "default": "Dockerfile"
+    }
+  },
+  "required": ["name"]
+}

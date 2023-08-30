@@ -1,0 +1,351 @@
+{
+  "_format": "ethers-rs-sol-cache-3",
+  "paths": {
+    "artifacts": "out",
+    "build_infos": "out/build-info",
+    "sources": "src",
+    "tests": "test",
+    "scripts": "script",
+    "libraries": [
+      "lib"
+    ]
+  },
+  "files": {
+    "src/erc20/Context.sol": {
+      "lastModificationDate": 1693096799462,
+      "contentHash": "5f2c5c4b6af2dd4551027144797bc8be",
+      "sourceName": "src/erc20/Context.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ]
+            }
+          },
+          "evmVersion": "shanghai",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "Context": {
+          "0.8.21+commit.d9974bed.Darwin.appleclang": "Context.sol/Context.json"
+        }
+      }
+    },
+    "src/erc20/ERC20.sol": {
+      "lastModificationDate": 1693096799463,
+      "contentHash": "108428fe49283f5c0403b37b0cdbaa53",
+      "sourceName": "src/erc20/ERC20.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ]
+            }
+          },
+          "evmVersion": "shanghai",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/erc20/Context.sol",
+        "src/erc20/IERC20.sol",
+        "src/erc20/IERC20Metadata.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "ERC20": {
+          "0.8.21+commit.d9974bed.Darwin.appleclang": "ERC20.sol/ERC20.json"
+        }
+      }
+    },
+    "src/erc20/IERC20.sol": {
+      "lastModificationDate": 1693096799463,
+      "contentHash": "71899df19c90d537de48e429d76d0e2c",
+      "sourceName": "src/erc20/IERC20.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ]
+            }
+          },
+          "evmVersion": "shanghai",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "IERC20": {
+          "0.8.21+commit.d9974bed.Darwin.appleclang": "IERC20.sol/IERC20.json"
+        }
+      }
+    },
+    "src/erc20/IERC20Metadata.sol": {
+      "lastModificationDate": 1693096799463,
+      "contentHash": "7d180a51f2ae3e249b0aaee46c94c996",
+      "sourceName": "src/erc20/IERC20Metadata.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ]
+            }
+          },
+          "evmVersion": "shanghai",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/erc20/IERC20.sol"
+      ],
+      "versionRequirement": "^0.8.0",
+      "artifacts": {
+        "IERC20Metadata": {
+          "0.8.21+commit.d9974bed.Darwin.appleclang": "IERC20Metadata.sol/IERC20Metadata.json"
+        }
+      }
+    },
+    "src/erc20/approval-transfer/ERC20ApprovalTransfer.sol": {
+      "lastModificationDate": 1693096799463,
+      "contentHash": "a40058dd4c5c22945690d1366763e113",
+      "sourceName": "src/erc20/approval-transfer/ERC20ApprovalTransfer.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ]
+            }
+          },
+          "evmVersion": "shanghai",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/erc20/Context.sol",
+        "src/erc20/ERC20.sol",
+        "src/erc20/IERC20.sol",
+        "src/erc20/IERC20Metadata.sol"
+      ],
+      "versionRequirement": "^0.8.17",
+      "artifacts": {
+        "ERC20ApprovalTransfer": {
+          "0.8.21+commit.d9974bed.Darwin.appleclang": "ERC20ApprovalTransfer.sol/ERC20ApprovalTransfer.json"
+        }
+      }
+    },
+    "src/erc20/mint/ERC20Mint.sol": {
+      "lastModificationDate": 1693096799464,
+      "contentHash": "83170bcfc7c6a14f634740a0dd420f4e",
+      "sourceName": "src/erc20/mint/ERC20Mint.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ]
+            }
+          },
+          "evmVersion": "shanghai",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/erc20/Context.sol",
+        "src/erc20/ERC20.sol",
+        "src/erc20/IERC20.sol",
+        "src/erc20/IERC20Metadata.sol"
+      ],
+      "versionRequirement": "^0.8.17",
+      "artifacts": {
+        "ERC20Mint": {
+          "0.8.21+commit.d9974bed.Darwin.appleclang": "ERC20Mint.sol/ERC20Mint.json"
+        }
+      }
+    },
+    "src/erc20/transfer/ERC20Transfer.sol": {
+      "lastModificationDate": 1693096799464,
+      "contentHash": "fc5e718bbb61bb79cc69b58d039595bd",
+      "sourceName": "src/erc20/transfer/ERC20Transfer.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ]
+            }
+          },
+          "evmVersion": "shanghai",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/erc20/Context.sol",
+        "src/erc20/ERC20.sol",
+        "src/erc20/IERC20.sol",
+        "src/erc20/IERC20Metadata.sol"
+      ],
+      "versionRequirement": "^0.8.17",
+      "artifacts": {
+        "ERC20Transfer": {
+          "0.8.21+commit.d9974bed.Darwin.appleclang": "ERC20Transfer.sol/ERC20Transfer.json"
+        }
+      }
+    },
+    "src/snailtracer/SnailTracer.sol": {
+      "lastModificationDate": 1693188304356,
+      "contentHash": "1871232127dd2337023ffaf0e69b647f",
+      "sourceName": "src/snailtracer/SnailTracer.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ]
+            }
+          },
+          "evmVersion": "shanghai",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.4.26",
+      "artifacts": {
+        "SnailTracer": {
+          "0.4.26+commit.4563c3fc.Darwin.appleclang": "SnailTracer.sol/SnailTracer.json"
+        }
+      }
+    },
+    "src/ten-thousand-hashes/TenThousandHashes.sol": {
+      "lastModificationDate": 1693096799466,
+      "contentHash": "4a6fdcdbf60c5ed66102619006af047d",
+      "sourceName": "src/ten-thousand-hashes/TenThousandHashes.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ]
+            }
+          },
+          "evmVersion": "shanghai",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.17",
+      "artifacts": {
+        "TenThousandHashes": {
+          "0.8.21+commit.d9974bed.Darwin.appleclang": "TenThousandHashes.sol/TenThousandHashes.json"
+        }
+      }
+    }
+  }
+}

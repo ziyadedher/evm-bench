@@ -1,0 +1,5 @@
+{
+  "$schema": "../../../benchmark.schema.json",
+  "name": "erc20.mint",
+  "contract": "ERC20Mint.sol"
+}

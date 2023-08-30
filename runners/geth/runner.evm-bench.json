@@ -1,5 +1,0 @@
-{
-  "$schema": "../schema.json",
-  "name": "geth",
-  "entry": "entry.sh"
-}
