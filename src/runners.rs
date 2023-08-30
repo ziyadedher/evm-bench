@@ -76,26 +76,41 @@ pub async fn build(runners: &Path, docker: &Docker) -> anyhow::Result<Vec<Runner
     log::trace!("runner metadatas: {runner_metadatas:#?}");
 
     log::info!("building runners...");
-    let runners: Vec<Runner> = futures::future::join_all(runner_metadatas.into_iter().filter_map(
-        |(metadata, dockerfile_path)| {
-            let tag = &format!("{}:{}", metadata.name, "latest");
+    let eventual_runners =
+        runner_metadatas
+            .into_iter()
+            .map(|(metadata, dockerfile_path)| async move {
+                let tag = &format!("{}:{}", metadata.name, "latest");
 
-            log::debug!("[{tag}] building runner ({}) image...", metadata.name);
+                log::debug!("[{tag}] building runner ({}) image...", metadata.name);
 
-            let context_directory = dockerfile_path.parent().or_else(|| {
-                log::warn!("[{tag}] could not get parent of runner metadata file, skipping...");
-                None
-            })?;
+                let context_directory = dockerfile_path.parent().or_else(|| {
+                    log::warn!("[{tag}] could not get parent of runner metadata file, skipping...");
+                    None
+                })?;
 
-            let mut tarball = tar::Builder::new(BufWriter::new(vec![]));
-            tarball
-                .append_dir_all(".", context_directory)
-                .map_err(|err| {
-                    log::warn!("[{tag}] could not create tarball: {err}, skipping...");
-                })
-                .ok()?;
+                let tarball = {
+                    let mut tarball = tar::Builder::new(BufWriter::new(vec![]));
+                    tarball
+                        .append_dir_all(".", context_directory)
+                        .map_err(|err| {
+                            log::warn!("[{tag}] could not create tarball: {err}, skipping...");
+                        })
+                        .ok()?;
+                    tarball
+                        .into_inner()
+                        .map_err(|err| {
+                            log::warn!("[{tag}] could not get tarball writer: {err}, skipping...");
+                        })
+                        .ok()?
+                        .into_inner()
+                        .map_err(|err| {
+                            log::warn!("[{tag}] could not get tarball data: {err}, skipping...");
+                        })
+                        .ok()?
+                        .into()
+                };
 
-            Some(
                 docker
                     .build_image(
                         BuildImageOptions {
@@ -105,24 +120,7 @@ pub async fn build(runners: &Path, docker: &Docker) -> anyhow::Result<Vec<Runner
                             ..Default::default()
                         },
                         None,
-                        Some(
-                            tarball
-                                .into_inner()
-                                .map_err(|err| {
-                                    log::warn!(
-                                        "[{tag}] could not get tarball writer: {err}, skipping..."
-                                    );
-                                })
-                                .ok()?
-                                .into_inner()
-                                .map_err(|err| {
-                                    log::warn!(
-                                        "[{tag}] could not get tarball data: {err}, skipping..."
-                                    );
-                                })
-                                .ok()?
-                                .into(),
-                        ),
+                        Some(tarball),
                     )
                     .fold((true, String::new()), |acc, r| async move {
                         match r {
@@ -155,14 +153,14 @@ pub async fn build(runners: &Path, docker: &Docker) -> anyhow::Result<Vec<Runner
                                 None
                             }
                         }
-                    }),
-            )
-        },
-    ))
-    .await
-    .into_iter()
-    .flatten()
-    .collect();
+                    })
+                    .await
+            });
+    let runners: Vec<Runner> = futures::future::join_all(eventual_runners)
+        .await
+        .into_iter()
+        .flatten()
+        .collect();
     log::info!("built {} runners", runners.len());
     log::trace!("runners: {runners:#?}");
 

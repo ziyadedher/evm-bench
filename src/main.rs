@@ -8,7 +8,7 @@ use std::path::PathBuf;
 
 use anyhow::Context;
 use bollard::{
-    container::{self, CreateContainerOptions},
+    container::{self, CreateContainerOptions, LogsOptions},
     Docker,
 };
 use clap::Parser;
@@ -108,6 +108,13 @@ async fn main() -> anyhow::Result<()> {
                     log::warn!("could not start container ({container_name}): {err}, skipping...");
                 })
                 .ok()?;
+
+            docker.logs::<String>(
+                &container_name,
+                Some(LogsOptions {
+                    ..Default::default()
+                }),
+            );
 
             docker
                 .wait_container::<String>(&container_name, None)
