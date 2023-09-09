@@ -1,6 +1,6 @@
 [package]
 name = "evm-bench"
-version = "0.1.0"
+version = "1.0.0"
 authors = ["Ziyad Edher <ziyad.edher@gmail.com>"]
 edition = "2021"
 description = "🚀🪑 evm-bench is a suite of Ethereum Virtual Machine stress tests and benchmarks."
