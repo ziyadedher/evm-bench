@@ -3,31 +3,42 @@
 #![warn(missing_docs)]
 #![warn(clippy::pedantic)]
 #![warn(clippy::cargo)]
+#![allow(clippy::too_many_lines)]
 
-use std::path::PathBuf;
+use std::{fs, path::PathBuf};
 
 use anyhow::Context;
-use bollard::{
-    container::{self, CreateContainerOptions, LogsOptions},
-    Docker,
-};
+use bollard::Docker;
+use chrono::Utc;
 use clap::Parser;
-use ethers_core::utils::hex::ToHex;
-use futures::TryStreamExt;
+use serde::{Deserialize, Serialize};
+use serde_json::json;
+use sysinfo::SystemExt;
 
-use crate::{benchmarks::compile, runners::build};
+use crate::{benchmark::compile, run::run, runner::build};
 
-mod benchmarks;
-mod runners;
+mod benchmark;
+mod run;
+mod runner;
 
-#[derive(Parser)]
+#[derive(Parser, Serialize, Deserialize)]
 #[command(author, version, about)]
 struct Args {
-    #[arg(short, long)]
+    // Path to a directory containing benchmark metadata files.
+    #[arg(short, long, default_value = "benchmarks")]
     benchmarks: PathBuf,
 
-    #[arg(short, long)]
+    // Path to a directory containing runner metadata files.
+    #[arg(short, long, default_value = "runners")]
     runners: PathBuf,
+
+    // Path to a directory to dump outputs in.
+    #[arg(short, long, default_value = "results")]
+    output: PathBuf,
+
+    // If false, does not collect system information (e.g. CPU, memory, etc...) in the output.
+    #[arg(long, default_value = "true")]
+    collect_sysinfo: bool,
 }
 
 #[tokio::main]
@@ -37,108 +48,95 @@ async fn main() -> anyhow::Result<()> {
 
     let args = Args::parse();
 
+    let start_time = Utc::now();
+
     log::info!("attempting to connect to Docker daemon...");
     let docker =
         &Docker::connect_with_local_defaults().context("could not connect to Docker daemon")?;
-    let docker_version = docker
+    let docker_version = &docker
         .version()
         .await
         .context("could not get Docker version")?;
     log::info!(
         "connected to Docker daemon with version {} (api: {}, os/arch: {}/{})",
-        docker_version.version.unwrap_or_default(),
-        docker_version.api_version.unwrap_or_default(),
-        docker_version.os.unwrap_or_default(),
-        docker_version.arch.unwrap_or_default()
+        docker_version
+            .version
+            .as_ref()
+            .unwrap_or(&"unknown".to_string()),
+        docker_version
+            .api_version
+            .as_ref()
+            .unwrap_or(&"unknown".to_string()),
+        docker_version.os.as_ref().unwrap_or(&"unknown".to_string()),
+        docker_version
+            .arch
+            .as_ref()
+            .unwrap_or(&"unknown".to_string()),
     );
 
-    let benchmarks = &compile(&args.benchmarks.canonicalize()?).map_err(|err| {
+    let benchmarks = compile(&args.benchmarks.canonicalize()?).map_err(|err| {
         log::error!("{err}");
         err
     })?;
-    let runners = &build(&args.runners.canonicalize()?, docker)
+    let runners = build(&args.runners.canonicalize()?, docker)
+        .await
+        .map_err(|err| {
+            log::error!("{err}");
+            err
+        })?;
+    let runs = run(benchmarks.iter(), runners.iter(), docker)
         .await
         .map_err(|err| {
             log::error!("{err}");
             err
         })?;
 
-    let _results: Vec<_> = futures::future::join_all(runners.iter().flat_map(|runner| {
-        benchmarks.iter().map(|benchmark| async {
-            let container_name =
-                format!("emv-bench-{}-{}", runner.identifier, benchmark.identifier);
-            let cmd = vec![
-                "--contract-code".to_string(),
-                benchmark.bytecode.encode_hex(),
-                "--calldata".to_string(),
-                benchmark.calldata.encode_hex(),
-                "--num-runs".to_string(),
-                "1".to_string(),
-            ];
-
+    let system_info = if sysinfo::System::IS_SUPPORTED {
+        if args.collect_sysinfo {
+            log::info!("collecting system information...");
+            let mut system_info = sysinfo::System::new_all();
+            system_info.refresh_all();
+            log::debug!("successfully collected system information");
+            log::trace!("system information: {system_info:#?}");
+            Some(system_info)
+        } else {
             log::info!(
-                "[{container_name}] running benchmark ({}) on runner ({})...",
-                benchmark.identifier,
-                runner.identifier
+                "user disabled system information collection, not gathering system information"
             );
-            log::trace!("[{container_name}] arguments: {cmd:#?}");
+            None
+        }
+    } else {
+        log::warn!("sysinfo is not supported on this platform, not gathering system information");
+        None
+    };
 
-            docker
-                .create_container(
-                    Some(CreateContainerOptions {
-                        name: container_name.clone(),
-                        ..Default::default()
-                    }),
-                    container::Config {
-                        image: Some(runner.docker_image_tag.clone()),
-                        cmd: Some(cmd),
-                        ..Default::default()
-                    },
-                )
-                .await
-                .map_err(|err| {
-                    log::warn!("could not create container ({container_name}): {err}, skipping...");
-                })
-                .ok()?;
+    let output = serde_json::to_string_pretty(&json!({
+        "metadata": {
+            "version": env!("CARGO_PKG_VERSION"),
+            "docker": docker_version,
+            "timestamp": start_time.to_rfc3339(),
+            "command": std::env::args().collect::<Vec<_>>(),
+            "args": args,
+            "system_information": system_info,
+        },
+        "benchmarks": benchmarks,
+        "runners": runners,
+        "runs": runs,
+    }))?;
 
-            docker
-                .start_container::<String>(&container_name, None)
-                .await
-                .map_err(|err| {
-                    log::warn!("could not start container ({container_name}): {err}, skipping...");
-                })
-                .ok()?;
-
-            docker.logs::<String>(
-                &container_name,
-                Some(LogsOptions {
-                    ..Default::default()
-                }),
-            );
-
-            docker
-                .wait_container::<String>(&container_name, None)
-                .try_for_each_concurrent(None, |_| async move { Ok(()) })
-                .await
-                .map_err(|err| {
-                    log::warn!(
-                        "could not wait for container ({container_name}): {err}, skipping..."
-                    );
-                })
-                .ok()?;
-
-            docker
-                .remove_container(&container_name, None)
-                .await
-                .map_err(|err| {
-                    log::warn!("could not remove container ({container_name}): {err}, skipping...");
-                })
-                .ok()?;
-
-            Some(())
-        })
-    }))
-    .await;
+    let output_file_path = args.output.join(format!(
+        "results.{}.json",
+        start_time.format("%Y-%m-%dT%H-%M-%S%z")
+    ));
+    log::info!(
+        "writing result output to {}...",
+        output_file_path.to_string_lossy()
+    );
+    fs::create_dir_all(&args.output).context("could not create output directory structure")?;
+    fs::write(&output_file_path, output).context(format!(
+        "could not write to output file {}",
+        output_file_path.to_string_lossy()
+    ))?;
 
     Ok(())
 }

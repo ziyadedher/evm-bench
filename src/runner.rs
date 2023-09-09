@@ -1,4 +1,5 @@
 use std::{
+    fmt::{self, Display, Formatter},
     fs::File,
     io::BufWriter,
     path::{Path, PathBuf},
@@ -16,14 +17,21 @@ typify::import_types!(
     patch = { EmvBenchRunnerMetadata = { rename = "RunnerMetadata" } }
 );
 
-#[derive(Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Identifier(pub String);
+
+impl Display for Identifier {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Runner {
-    pub identifier: String,
+    pub identifier: Identifier,
     pub metadata: RunnerMetadata,
     pub docker_image_tag: String,
 }
-
-#[allow(clippy::too_many_lines)]
 
 pub async fn build(runners: &Path, docker: &Docker) -> anyhow::Result<Vec<Runner>> {
     log::info!("getting all runner metadata files...");
@@ -140,7 +148,7 @@ pub async fn build(runners: &Path, docker: &Docker) -> anyhow::Result<Vec<Runner
                                 );
                                 log::trace!("[{tag}] build logs\n{logs}");
                                 Some(Runner {
-                                    identifier: metadata.name.clone(),
+                                    identifier: Identifier(metadata.name.clone()),
                                     metadata,
                                     docker_image_tag: tag.to_string(),
                                 })

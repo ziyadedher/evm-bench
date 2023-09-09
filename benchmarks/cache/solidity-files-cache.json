@@ -277,6 +277,41 @@
         }
       }
     },
+    "src/sanity/Sanity.sol": {
+      "lastModificationDate": 1693610630401,
+      "contentHash": "408a6212a120e28977ff9ecffb9d0f01",
+      "sourceName": "src/sanity/Sanity.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ]
+            }
+          },
+          "evmVersion": "shanghai",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.17",
+      "artifacts": {
+        "Sanity": {
+          "0.8.21+commit.d9974bed.Darwin.appleclang": "Sanity.sol/Sanity.json"
+        }
+      }
+    },
     "src/snailtracer/SnailTracer.sol": {
       "lastModificationDate": 1693188304356,
       "contentHash": "1871232127dd2337023ffaf0e69b647f",

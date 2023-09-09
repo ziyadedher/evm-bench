@@ -1,5 +1,6 @@
 use std::{
     collections::BTreeMap,
+    fmt::{self, Display, Formatter},
     fs::File,
     path::{Path, PathBuf},
 };
@@ -20,9 +21,18 @@ typify::import_types!(
     }
 );
 
-#[derive(Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Identifier(pub String);
+
+impl Display for Identifier {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Benchmark {
-    pub identifier: String,
+    pub identifier: Identifier,
     pub metadata: BenchmarkMetadata,
     pub solc_version: Version,
     pub source_path: PathBuf,
@@ -117,7 +127,7 @@ pub fn compile(benchmarks: &Path) -> anyhow::Result<Vec<Benchmark>> {
             log::debug!("processed artifact");
 
             Some(Benchmark {
-                identifier: metadata.name.clone(),
+                identifier: Identifier(metadata.name.clone()),
                 metadata: metadata.clone(),
                 solc_version: artifact_id.version,
                 source_path,

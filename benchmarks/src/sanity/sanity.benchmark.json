@@ -1,0 +1,5 @@
+{
+  "$schema": "../../benchmark.schema.json",
+  "name": "sanity",
+  "contract": "Sanity.sol"
+}
