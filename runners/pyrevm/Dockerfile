@@ -7,8 +7,6 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 RUN curl -sSL https://install.python-poetry.org | python3 -
 ENV PATH="/root/.local/bin:${PATH}"
 
-RUN echo ${PATH}
-
 WORKDIR /runner/
 COPY pyproject.toml runner.py ./
 
