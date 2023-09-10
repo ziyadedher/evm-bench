@@ -106,14 +106,6 @@ pub async fn run<'a>(
                 .wait_container::<String>(&container_name, None)
                 .try_for_each_concurrent(None, |_| async move { Ok(()) })
                 .await;
-            match wait_response {
-                Ok(()) => log::debug!(
-                    "[{run_identifier}] successfully waited for container",
-                ),
-                Err(err) => log::warn!(
-                    "[{run_identifier}] could not wait for container: {err}, continuing...",
-                ),
-            }
 
             let (err, container_stdout, container_stderr) = docker
                 .logs::<String>(
@@ -143,12 +135,18 @@ pub async fn run<'a>(
                     "[{run_identifier}] could not get all container run logs: {err}, continuing...\nstdout:\n{container_stdout}\nstderr:\n{container_stderr}",
                 );
                 None
+            } else if let Err(err) = wait_response {
+                log::warn!(
+                    "[{run_identifier}] container did not finish cleanly: {err}, continuing...\nstdout:\n{container_stdout}\nstderr:\n{container_stderr}",
+                );
+                None
             } else {
                 log::trace!(
                     "[{run_identifier}] run logs\nstdout:\n{container_stdout}\nstderr:\n{container_stderr}",
                 );
                 let result = container_stdout.split_whitespace().map(|line| {
-                    Ok::<Duration, Error>(Duration::from_micros(line.parse::<u64>()?))
+                    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+                    Ok::<Duration, Error>(Duration::from_micros(line.parse::<f64>()?.round() as u64))
                 }).collect::<Result<Vec<_>, Error>>();
                 match result {
                     Ok(result) => Some(result),
@@ -191,7 +189,11 @@ pub async fn run<'a>(
                 "[{}] run finished with {} passes (avg: {:?})",
                 run.identifier,
                 run.durations.len(),
-                run.durations.iter().sum::<Duration>() / u32::try_from(run.durations.len())?,
+                if run.durations.is_empty() {
+                    Duration::from_secs(0)
+                } else {
+                    run.durations.iter().sum::<Duration>() / u32::try_from(run.durations.len())?
+                },
             );
             log::trace!("[{}] run durations: {:#?}", run.identifier, run.durations);
             runs.push(run);
