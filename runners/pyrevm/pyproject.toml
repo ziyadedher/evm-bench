@@ -5,13 +5,16 @@ description = ""
 authors = ["Ziyad Edher <ziyad.edher@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.10"
-pyrevm = { git = "https://github.com/gakonst/pyrevm.git", branch = "master" }
-py-evm = "^0.6.0-alpha.1"
+python = "^3.11"
+pyrevm = { git = "https://github.com/ziyadedher/pyrevm.git", branch = "bump-versions" }
+typer = "^0.9.0"
+eth-utils = "^2.2.0"
+setuptools = "^68.2.0"
 
-[tool.poetry.dev-dependencies]
-mypy = "^1.0.0"
-black = "^23.0.0"
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.0.287"
+black = "^23.9.0"
+mypy = "^1.5.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

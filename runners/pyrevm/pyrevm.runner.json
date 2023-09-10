@@ -1,5 +1,4 @@
 {
   "$schema": "../runner.schema.json",
-  "name": "pyrevm",
-  "entry": "entry.sh"
+  "name": "pyrevm"
 }
