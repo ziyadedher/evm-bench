@@ -1,7 +1,8 @@
 FROM rust:latest
 
-WORKDIR /revm/
-COPY . .
+WORKDIR /runner/
+COPY Cargo.toml ./
+COPY src ./src
 
 RUN cargo install --path .
 
