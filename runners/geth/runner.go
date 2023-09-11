@@ -51,6 +51,7 @@ var cmd = &cobra.Command{
 			os.Exit(1)
 		}
 		statedb.SetCode(contractAddress, contractCodeBytes)
+		statedb.AddAddressToAccessList(contractAddress)
 
 		zeroValue := big.NewInt(0)
 		gasLimit := ^uint64(0)
