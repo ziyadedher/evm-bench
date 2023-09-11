@@ -101,16 +101,7 @@ pub fn compile(benchmarks: &Path) -> anyhow::Result<Vec<Benchmark>> {
         .compile()?
         .into_artifacts()
         .filter_map(|(artifact_id, artifact)| {
-            log::debug!("processing artifact ({})...", artifact_id.identifier());
-
-            let bytecode = artifact
-                .get_deployed_bytecode_bytes()
-                .filter(|bytecode| !bytecode.is_empty())
-                .or_else(|| {
-                    log::debug!("no deployed bytecode, skipping...",);
-                    None
-                })?;
-
+            log::debug!("processing artifact ({})...", artifact_id.source.display());
             let source_path = artifact_id
                 .source
                 .canonicalize()
@@ -124,19 +115,36 @@ pub fn compile(benchmarks: &Path) -> anyhow::Result<Vec<Benchmark>> {
                 None
             })?;
 
-            log::debug!("processed artifact");
+            let identifier = Identifier(metadata.name.clone());
+
+            let bytecode = artifact
+                .get_deployed_bytecode_bytes()
+                .filter(|bytecode| !bytecode.is_empty())
+                .or_else(|| {
+                    log::debug!("[{}] no deployed bytecode, skipping...", identifier);
+                    None
+                })?;
+            let calldata = Bytes::from_hex(&metadata.calldata)
+                .map_err(|err| {
+                    log::warn!(
+                        "[{}] could not hex decode calldata: {err}, skipping...",
+                        identifier
+                    );
+                })
+                .ok()?;
+
+            log::info!(
+                "[{}] successfully compiled benchmark and proccessed artifacts",
+                identifier
+            );
 
             Some(Benchmark {
-                identifier: Identifier(metadata.name.clone()),
+                identifier: identifier.clone(),
                 metadata: metadata.clone(),
                 solc_version: artifact_id.version,
                 source_path,
                 bytecode: bytecode.into_owned(),
-                calldata: Bytes::from_hex(&metadata.calldata)
-                    .map_err(|err| {
-                        log::warn!("could not hex decode calldata: {err}, skipping...");
-                    })
-                    .ok()?,
+                calldata,
             })
         })
         .collect();

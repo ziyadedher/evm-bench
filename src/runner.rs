@@ -142,7 +142,7 @@ pub async fn build(runners: &Path, docker: &Docker) -> anyhow::Result<Vec<Runner
                         let tag = tag.clone();
                         move |(success, logs)| {
                             if success {
-                                log::debug!(
+                                log::info!(
                                     "[{tag}] successfully built runner ({}) image",
                                     metadata.name,
                                 );
