@@ -28,7 +28,7 @@ void check_status(evmc_result result) {
 int main(int argc, char** argv) {
   std::string contract_code;
   std::string calldata;
-  uint num_runs;
+  uint32_t num_runs;
 
   CLI::App app{"evmone runner"};
   app.add_option("--contract-code", contract_code,
