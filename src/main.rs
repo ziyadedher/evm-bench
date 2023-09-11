@@ -93,7 +93,7 @@ async fn main() -> anyhow::Result<()> {
 
     let system_info = if sysinfo::System::IS_SUPPORTED {
         if args.collect_sysinfo {
-            log::info!("collecting system information...");
+            log::debug!("collecting system information...");
             let mut system_info = sysinfo::System::new_all();
             system_info.refresh_all();
             log::debug!("successfully collected system information");

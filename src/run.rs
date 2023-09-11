@@ -61,7 +61,7 @@ pub async fn run<'a>(
                 "10".to_string(),
             ];
 
-            log::info!(
+            log::debug!(
                 "[{run_identifier}] running benchmark ({}) on runner ({})...",
                 benchmark.identifier.0,
                 runner.identifier.0
