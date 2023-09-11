@@ -26,15 +26,14 @@ var cmd = &cobra.Command{
 	Use:   "runner-geth",
 	Short: "go-ethereum runner for evm-bench",
 	Run: func(_ *cobra.Command, _ []string) {
-		contractCodeBytes := common.Hex2Bytes(contractCode)
-		calldataBytes := common.Hex2Bytes(calldata)
+		contractCodeBytes := common.FromHex(contractCode)
+		calldataBytes := common.FromHex(calldata)
 
 		zeroAddress := common.BytesToAddress(common.FromHex("0x0000000000000000000000000000000000000000"))
 		callerAddress := common.BytesToAddress(common.FromHex("0x1000000000000000000000000000000000000001"))
 		contractAddress := common.BytesToAddress(common.FromHex("0x2000000000000000000000000000000000000002"))
 
 		config := params.MainnetChainConfig
-		rules := config.Rules(config.LondonBlock, false)
 		defaultGenesis := core.DefaultGenesisBlock()
 		genesis := &core.Genesis{
 			Config:     config,
@@ -42,7 +41,7 @@ var cmd = &cobra.Command{
 			Difficulty: defaultGenesis.Difficulty,
 			GasLimit:   defaultGenesis.GasLimit,
 			Number:     config.LondonBlock.Uint64(),
-			Timestamp:  defaultGenesis.Timestamp,
+			Timestamp:  *config.ShanghaiTime,
 			Alloc:      defaultGenesis.Alloc,
 		}
 
@@ -56,17 +55,30 @@ var cmd = &cobra.Command{
 		zeroValue := big.NewInt(0)
 		gasLimit := ^uint64(0)
 
-		msg := types.NewMessage(callerAddress, &contractAddress, 1, zeroValue, gasLimit, zeroValue, zeroValue, zeroValue, calldataBytes, types.AccessList{}, false)
-		statedb.PrepareAccessList(callerAddress, &zeroAddress, vm.ActivePrecompiles(rules), msg.AccessList())
+		msg := core.Message{
+			To:                &contractAddress,
+			From:              callerAddress,
+			Nonce:             0,
+			Value:             zeroValue,
+			GasLimit:          gasLimit,
+			GasPrice:          zeroValue,
+			GasFeeCap:         zeroValue,
+			GasTipCap:         zeroValue,
+			Data:              calldataBytes,
+			AccessList:        types.AccessList{},
+			BlobGasFeeCap:     zeroValue,
+			BlobHashes:        []common.Hash{},
+			SkipAccountChecks: false,
+		}
 
 		blockContext := core.NewEVMBlockContext(genesis.ToBlock().Header(), nil, &zeroAddress)
-		txContext := core.NewEVMTxContext(msg)
+		txContext := core.NewEVMTxContext(&msg)
 
 		for i := 0; i < numRuns; i++ {
 			evm := vm.NewEVM(blockContext, txContext, statedb.Copy(), config, vm.Config{})
 
 			start := time.Now()
-			_, _, err := evm.Call(vm.AccountRef(callerAddress), *msg.To(), msg.Data(), msg.Gas(), msg.Value())
+			_, _, err := evm.Call(vm.AccountRef(callerAddress), contractAddress, calldataBytes, gasLimit, zeroValue)
 			timeTaken := time.Since(start)
 
 			if err != nil {

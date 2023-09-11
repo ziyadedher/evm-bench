@@ -1,5 +1,4 @@
 {
   "$schema": "../runner.schema.json",
-  "name": "evmone",
-  "entry": "entry.sh"
+  "name": "evmone"
 }
