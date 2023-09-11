@@ -41,19 +41,19 @@ fn main() {
         .expect("could not hex decode calldata")
         .into();
 
+    let mut env = Env::default();
+    env.tx.caller = caller_address;
+    env.tx.transact_to = TransactTo::create();
+    env.tx.data = calldata;
+
+    let bytecode = to_analysed(Bytecode::new_raw(contract_code));
+    let bytecode_hash = bytecode.hash_slow();
+    let contract = Box::new(Contract::new_env(&env, bytecode, bytecode_hash));
+
+    let mut interpreter = Interpreter::new(contract, u64::MAX, false);
+    let mut host: DummyHost = DummyHost::new(env);
+
     for _ in 0..args.num_runs {
-        let mut env = Env::default();
-        env.tx.caller = caller_address;
-        env.tx.transact_to = TransactTo::create();
-        env.tx.data = calldata.clone();
-
-        let bytecode = to_analysed(Bytecode::new_raw(contract_code.clone()));
-        let bytecode_hash = bytecode.hash_slow();
-        let contract = Box::new(Contract::new_env(&env, bytecode, bytecode_hash));
-
-        let mut interpreter = Interpreter::new(contract.clone(), u64::MAX, false);
-        let mut host: DummyHost = DummyHost::new(env);
-
         let timer = Instant::now();
         let reason = interpreter.run::<_, LatestSpec>(&mut host);
         let dur = timer.elapsed();
