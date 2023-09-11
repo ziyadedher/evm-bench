@@ -3,7 +3,7 @@ module runner-geth
 go 1.21
 
 require (
-	github.com/ethereum/go-ethereum v1.10.25
+	github.com/ethereum/go-ethereum v1.12.2
 	github.com/spf13/cobra v1.6.0
 )
 
