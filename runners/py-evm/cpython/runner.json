@@ -1,5 +1,0 @@
-{
-  "$schema": "../../runner.schema.json",
-  "name": "py-evm.cpython",
-  "entry": "entry.sh"
-}

@@ -1,125 +1,55 @@
-from typing import cast, Final
+from typing import Final
+from typing_extensions import Annotated
 
-import argparse
-import pathlib
 import time
 
-import eth.abc
-import eth.consensus.pow
-import eth.constants
-import eth.chains.base
-import eth.db.atomic
-import eth.tools.builder.chain.builders
-import eth.vm.forks.berlin
-import eth_keys
-import eth_typing
+from eth.constants import BLANK_ROOT_HASH, ZERO_HASH32, GAS_LIMIT_MAXIMUM
+from eth.db.atomic import AtomicDB as DB
+from eth.vm.execution_context import ExecutionContext
+from eth.vm.message import Message
+from eth.vm.transaction_context import BaseTransactionContext as TransactionContext
+from eth.vm.forks.shanghai.computation import ShanghaiComputation as Computation
+from eth.vm.forks.shanghai.state import ShanghaiState as State
 import eth_utils
+import typer
 
+ZERO_ADDRESS: Final[str] = "0x0000000000000000000000000000000000000000"
+CALLER_ADDRESS: Final[str] = "0x1000000000000000000000000000000000000001"
+CONTRACT_ADDRESS: Final[str] = "0x2000000000000000000000000000000000000002"
 
-GAS_LIMIT: Final[int] = 1_000_000_000
-ZERO_ADDRESS: Final[eth_typing.Address] = eth.constants.ZERO_ADDRESS
-
-CALLER_PRIVATE_KEY: Final[eth_keys.keys.PrivateKey] = eth_keys.keys.PrivateKey(
-    eth_utils.hexadecimal.decode_hex(
-        "0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8"
-    )
-)
-CALLER_ADDRESS: Final[eth_typing.Address] = eth_typing.Address(
-    CALLER_PRIVATE_KEY.public_key.to_canonical_address()
-)
-
-
-def _load_contract_data(data_file_path: pathlib.Path) -> bytes:
-    with open(data_file_path, mode="r") as file:
-        return bytes.fromhex(file.read())
-
-
-def _construct_chain() -> eth.chains.base.MiningChain:
-    chain_class = eth.chains.base.MiningChain.configure(
-        __name__="TestChain",
-        vm_configuration=(
-            (eth.constants.GENESIS_BLOCK_NUMBER, eth.vm.forks.berlin.BerlinVM),
-        ),
-    )
-    chain = chain_class.from_genesis(
-        eth.db.atomic.AtomicDB(),
-        genesis_params={
-            "difficulty": 1,
-            "gas_limit": 2 * GAS_LIMIT,
-        },
-    )
-
-    return cast(eth.chains.base.MiningChain, chain)
-
-
-def _benchmark(
-    chain: eth.chains.base.MiningChain,
-    caller_address: eth_typing.Address,
-    caller_private_key: eth_keys.keys.PrivateKey,
-    contract_code: bytes,
-    call_data: bytes,
-    num_runs: int,
+def main(
+    contract_code: Annotated[str, typer.Option()],
+    calldata: Annotated[str, typer.Option()],
+    num_runs: Annotated[int, typer.Option()],
 ) -> None:
-    evm = chain.get_vm()
-    nonce = evm.state.get_nonce(caller_address)
-    tx = evm.create_unsigned_transaction(
-        nonce=nonce,
-        gas_price=0,
-        gas=GAS_LIMIT,
-        to=eth.constants.CREATE_CONTRACT_ADDRESS,
-        value=0,
-        data=contract_code,
+    caller = eth_utils.hexadecimal.decode_hex(CALLER_ADDRESS)
+    to = eth_utils.hexadecimal.decode_hex(CONTRACT_ADDRESS)
+    data = eth_utils.hexadecimal.decode_hex(calldata)
+
+    state = State(
+        DB(),
+        ExecutionContext(ZERO_ADDRESS, 0, 0, 0, ZERO_HASH32, GAS_LIMIT_MAXIMUM, [], 0),
+        BLANK_ROOT_HASH,
     )
-    signed_tx = tx.as_signed_transaction(caller_private_key)
-    _, computation = evm.apply_transaction(chain.header, signed_tx)
-
-    contract_address = computation.msg.storage_address
-
-    nonce = evm.state.get_nonce(caller_address)
-    tx = evm.create_unsigned_transaction(
-        nonce=nonce,
-        gas_price=0,
-        gas=GAS_LIMIT,
-        to=contract_address,
-        value=0,
-        data=call_data,
+    state.set_code(
+        to,
+        eth_utils.hexadecimal.decode_hex(contract_code),
     )
-    signed_tx = tx.as_signed_transaction(caller_private_key)
-    evm_message = evm.state.get_transaction_executor().build_evm_message(signed_tx)
 
-    def bench() -> None:
-        evm.state.get_transaction_executor().build_computation(evm_message, signed_tx)
+    message = Message(GAS_LIMIT_MAXIMUM, to, caller, 0, data, b"")
+    transaction_context = TransactionContext(0, caller)
 
     for _ in range(num_runs):
         start = time.perf_counter_ns()
-        bench()
+        computation = Computation.apply_computation(
+            state,
+            message,
+            transaction_context,
+        )
         end = time.perf_counter_ns()
-        print((end - start) / 1e6)
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--contract-code-path", type=pathlib.Path)
-    parser.add_argument("--calldata", type=str)
-    parser.add_argument("--num-runs", type=int)
-    return parser.parse_args()
-
-
-def main() -> None:
-    args = parse_args()
-
-    contract_data = _load_contract_data(args.contract_code_path)
-    chain = _construct_chain()
-
-    _benchmark(
-        chain,
-        caller_address=CALLER_ADDRESS,
-        caller_private_key=CALLER_PRIVATE_KEY,
-        contract_code=contract_data,
-        call_data=bytes.fromhex(args.calldata),
-        num_runs=args.num_runs,
-    )
+        assert computation.is_success
+        print((end - start) / 1e3)
 
 
 if __name__ == "__main__":
-    main()
+    typer.run(main)
