@@ -3,40 +3,44 @@ from typing_extensions import Annotated
 
 import time
 
-from eth.constants import BLANK_ROOT_HASH, ZERO_HASH32, GAS_LIMIT_MAXIMUM
+import typer
+
+from eth.constants import BLANK_ROOT_HASH, ZERO_HASH32, GAS_LIMIT_MAXIMUM, ZERO_ADDRESS
 from eth.db.atomic import AtomicDB as DB
 from eth.vm.execution_context import ExecutionContext
 from eth.vm.message import Message
 from eth.vm.transaction_context import BaseTransactionContext as TransactionContext
 from eth.vm.forks.shanghai.computation import ShanghaiComputation as Computation
 from eth.vm.forks.shanghai.state import ShanghaiState as State
-import eth_utils
-import typer
+from eth_typing import Address, BlockNumber
+from eth_utils.hexadecimal import decode_hex
 
-ZERO_ADDRESS: Final[str] = "0x0000000000000000000000000000000000000000"
+
 CALLER_ADDRESS: Final[str] = "0x1000000000000000000000000000000000000001"
 CONTRACT_ADDRESS: Final[str] = "0x2000000000000000000000000000000000000002"
+
 
 def main(
     contract_code: Annotated[str, typer.Option()],
     calldata: Annotated[str, typer.Option()],
     num_runs: Annotated[int, typer.Option()],
 ) -> None:
-    caller = eth_utils.hexadecimal.decode_hex(CALLER_ADDRESS)
-    to = eth_utils.hexadecimal.decode_hex(CONTRACT_ADDRESS)
-    data = eth_utils.hexadecimal.decode_hex(calldata)
+    caller = Address(decode_hex(CALLER_ADDRESS))
+    contract_address = Address(decode_hex(CONTRACT_ADDRESS))
+    calldata_bytes: bytes = decode_hex(calldata)
+    contract_code_bytes = decode_hex(contract_code)
 
     state = State(
         DB(),
-        ExecutionContext(ZERO_ADDRESS, 0, 0, 0, ZERO_HASH32, GAS_LIMIT_MAXIMUM, [], 0),
+        ExecutionContext(ZERO_ADDRESS, 0, BlockNumber(0), 0, ZERO_HASH32, GAS_LIMIT_MAXIMUM, [], 0),
         BLANK_ROOT_HASH,
     )
     state.set_code(
-        to,
-        eth_utils.hexadecimal.decode_hex(contract_code),
+        contract_address,
+        decode_hex(contract_code),
     )
 
-    message = Message(GAS_LIMIT_MAXIMUM, to, caller, 0, data, b"")
+    message = Message(GAS_LIMIT_MAXIMUM, contract_address, caller, 0, calldata_bytes, contract_code_bytes)
     transaction_context = TransactionContext(0, caller)
 
     for _ in range(num_runs):
