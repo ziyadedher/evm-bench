@@ -1,4 +1,6 @@
-FROM ubuntu:latest
+FROM alpine:latest
+
+RUN apk add build-base make cmake git
 
 WORKDIR /runner/
 COPY CMakeLists.txt runner.cpp ./
