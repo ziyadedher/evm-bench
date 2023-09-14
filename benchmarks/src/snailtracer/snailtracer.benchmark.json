@@ -1,5 +1,6 @@
 {
   "$schema": "../../benchmark.schema.json",
   "name": "snailtracer",
-  "contract": "SnailTracer.sol"
+  "contract": "SnailTracer.sol",
+  "cost": "expensive"
 }
