@@ -1,5 +1,0 @@
-{
-  "$schema": "../runner.schema.json",
-  "name": "py-evm.cython",
-  "dockerfile": "Dockerfile.cython"
-}

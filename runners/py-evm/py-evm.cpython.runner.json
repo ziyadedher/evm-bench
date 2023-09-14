@@ -1,0 +1,5 @@
+{
+  "$schema": "../runner.schema.json",
+  "name": "py-evm.cpython",
+  "dockerfile": "Dockerfile.cpython"
+}
