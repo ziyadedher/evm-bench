@@ -40,7 +40,9 @@ use futures::{StreamExt, TryStreamExt};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    benchmarks::{compile_all, Benchmark, Identifier as BenchmarkIdentifier},
+    benchmarks::{
+        compile_all, Benchmark, BenchmarkMetadataCost, Identifier as BenchmarkIdentifier,
+    },
     runners::{build_all, Identifier as RunnerIdentifier, Runner},
 };
 
@@ -116,6 +118,14 @@ pub struct Run {
     pub durations: Vec<Duration>,
 }
 
+fn num_runs_for_benchmark_cost(cost: BenchmarkMetadataCost) -> u32 {
+    match cost {
+        BenchmarkMetadataCost::Cheap => 25,
+        BenchmarkMetadataCost::Moderate => 10,
+        BenchmarkMetadataCost::Expensive => 3,
+    }
+}
+
 /// Runs a benchmark on a runner.
 ///
 /// Creates a container from the runner's Docker image, runs the benchmark, and parses the output of the benchmark. The
@@ -159,7 +169,7 @@ pub async fn execute(benchmark: &Benchmark, runner: &Runner, docker: &Docker) ->
         "--calldata".to_string(),
         benchmark.calldata.encode_hex(),
         "--num-runs".to_string(),
-        "10".to_string(),
+        num_runs_for_benchmark_cost(benchmark.metadata.cost).to_string(),
     ];
 
     log::debug!(

@@ -30,7 +30,7 @@ use serde::{Deserialize, Serialize};
 
 mod metadata;
 
-pub use metadata::BenchmarkMetadata;
+pub use metadata::{BenchmarkMetadata, BenchmarkMetadataCost};
 
 /// Glob pattern for benchmark metadata files.
 pub const FILE_PATTERN: &str = "**/*.benchmark.json";
