@@ -21,11 +21,7 @@
     "cost": {
       "description": "How expensive this benchmark is to run.",
       "type": "string",
-      "oneOf": [
-        {
-          "enum": ["cheap", "moderate", "expensive"]
-        }
-      ],
+      "enum": ["cheap", "moderate", "expensive"],
       "default": "cheap"
     }
   },
