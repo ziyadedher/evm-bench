@@ -264,19 +264,22 @@ test = ["asn1tools (>=0.146.2,<0.147)", "eth-hash[pycryptodome]", "eth-hash[pysh
 
 [[package]]
 name = "eth-typing"
-version = "3.4.0"
+version = "3.5.0"
 description = "eth-typing: Common type annotations for ethereum python packages"
 category = "main"
 optional = false
 python-versions = ">=3.7.2, <4"
 files = [
-    {file = "eth-typing-3.4.0.tar.gz", hash = "sha256:7f49610469811ee97ac43eaf6baa294778ce74042d41e61ecf22e5ebe385590f"},
-    {file = "eth_typing-3.4.0-py3-none-any.whl", hash = "sha256:347d50713dd58ab50063b228d8271624ab2de3071bfa32d467b05f0ea31ab4c5"},
+    {file = "eth-typing-3.5.0.tar.gz", hash = "sha256:a92f6896896752143a4704c57441eedf7b1f65d5df4b1c20cb802bb4aa602d7e"},
+    {file = "eth_typing-3.5.0-py3-none-any.whl", hash = "sha256:a773dbb7d78fcd1539c30264193ca26ec965f3abca2711748e307f117b0a10f5"},
 ]
+
+[package.dependencies]
+typing-extensions = ">=4.0.1"
 
 [package.extras]
 dev = ["black (>=23)", "build (>=0.9.0)", "bumpversion (>=0.5.3)", "flake8 (==6.0.0)", "flake8-bugbear (==23.3.23)", "ipython", "isort (>=5.10.1)", "mypy (==0.971)", "pydocstyle (>=6.0.0)", "pytest (>=7.0.0)", "pytest-watch (>=4.1.0)", "pytest-xdist (>=2.4.0)", "sphinx (>=5.0.0)", "sphinx-rtd-theme (>=1.0.0)", "towncrier (>=21,<22)", "tox (>=4.0.0)", "twine", "wheel"]
-doc = ["sphinx (>=5.0.0)", "sphinx-rtd-theme (>=1.0.0)", "towncrier (>=21,<22)"]
+docs = ["sphinx (>=5.0.0)", "sphinx-rtd-theme (>=1.0.0)", "towncrier (>=21,<22)"]
 lint = ["black (>=23)", "flake8 (==6.0.0)", "flake8-bugbear (==23.3.23)", "isort (>=5.10.1)", "mypy (==0.971)", "pydocstyle (>=6.0.0)"]
 test = ["pytest (>=7.0.0)", "pytest-xdist (>=2.4.0)"]
 
@@ -533,14 +536,14 @@ files = [
 
 [[package]]
 name = "packaging"
-version = "23.1"
+version = "23.2"
 description = "Core utilities for Python packages"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "packaging-23.1-py3-none-any.whl", hash = "sha256:994793af429502c4ea2ebf6bf664629d07c1a9fe974af92966e4b8d2df7edc61"},
-    {file = "packaging-23.1.tar.gz", hash = "sha256:a392980d2b6cffa644431898be54b0045151319d1e7ec34f0cfed48767dd334f"},
+    {file = "packaging-23.2-py3-none-any.whl", hash = "sha256:8c491190033a9af7e1d931d0b5dacc2ef47509b34dd0de67ed209b5203fc88c7"},
+    {file = "packaging-23.2.tar.gz", hash = "sha256:048fb0e9405036518eaaf48a55953c750c11e1a1b68e0dd1a9d62ed0c092cfc5"},
 ]
 
 [[package]]
@@ -827,7 +830,7 @@ test = ["hypothesis (>=6.56.4,<7)", "pycryptodome", "pytest (>=7.0.0)", "pytest-
 name = "typing-extensions"
 version = "4.8.0"
 description = "Backported and Experimental Type Hints for Python 3.8+"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
