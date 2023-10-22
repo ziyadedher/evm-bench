@@ -8,9 +8,9 @@ RUN curl -sSL https://install.python-poetry.org | python3 -
 ENV PATH="/root/.local/bin:${PATH}"
 
 WORKDIR /runner/
-COPY pyproject.toml runner.py ./
+COPY pyproject.toml poetry.lock runner.py ./
 
-RUN cargo
+RUN poetry check --lock
 RUN poetry install
 
 ENTRYPOINT [ "poetry", "run", "python", "runner.py" ]

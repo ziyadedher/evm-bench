@@ -1,9 +1,9 @@
 FROM rust:latest
 
 WORKDIR /runner/
-COPY Cargo.toml ./
+COPY Cargo.toml Cargo.lock ./
 COPY src ./src
 
-RUN cargo install --path .
+RUN cargo install --locked --path .
 
 ENTRYPOINT [ "runner-revm" ]

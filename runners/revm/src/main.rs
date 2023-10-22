@@ -1,10 +1,9 @@
-use std::{str::FromStr, time::Instant};
+use std::time::Instant;
 
-use bytes::Bytes;
 use clap::Parser;
 use revm_interpreter::{
     analysis::to_analysed,
-    primitives::{Bytecode, Env, LatestSpec, TransactTo, B160},
+    primitives::{Address, Bytecode, Env, LatestSpec, TransactTo},
     Contract, DummyHost, InstructionResult, Interpreter,
 };
 
@@ -32,12 +31,14 @@ const CALLER_ADDRESS: &str = "0x1000000000000000000000000000000000000001";
 fn main() {
     let args = Args::parse();
 
-    let caller_address = B160::from_str(CALLER_ADDRESS).unwrap();
+    let caller_address = CALLER_ADDRESS
+        .parse::<Address>()
+        .expect("could not parse caller address");
 
-    let contract_code: Bytes = hex::decode(args.contract_code)
+    let contract_code = hex::decode(args.contract_code)
         .expect("could not hex decode contract code")
         .into();
-    let calldata: Bytes = hex::decode(args.calldata)
+    let calldata = hex::decode(args.calldata)
         .expect("could not hex decode calldata")
         .into();
 

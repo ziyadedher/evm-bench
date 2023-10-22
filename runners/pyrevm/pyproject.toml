@@ -6,7 +6,7 @@ authors = ["Ziyad Edher <ziyad.edher@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-pyrevm = { git = "https://github.com/ziyadedher/pyrevm.git", branch = "bump-versions" }
+pyrevm = { git = "https://github.com/gakonst/pyrevm", rev = "6554e943c9e2d8aa23ea2cabfeda7fcaa348d8ed" }
 typer = "^0.9.0"
 eth-utils = "^2.2.0"
 setuptools = "^68.2.0"

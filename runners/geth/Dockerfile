@@ -1,7 +1,7 @@
 FROM golang:latest
 
 WORKDIR /runner/
-COPY go.mod runner.go ./
+COPY go.mod go.sum runner.go ./
 
 RUN go get
 RUN go install

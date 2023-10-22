@@ -10,6 +10,9 @@
 #include <iostream>
 #include <string>
 
+#include "build/_deps/evmone-src/lib/evmone/advanced_analysis.hpp"
+#include "build/_deps/evmone-src/lib/evmone/advanced_execution.hpp"
+
 using namespace evmc::literals;
 
 constexpr int64_t GAS = INT64_MAX;
@@ -52,7 +55,14 @@ int main(int argc, char** argv) {
   evmc::from_hex(contract_code.begin(), contract_code.end(),
                  std::back_inserter(contract_code_bytes));
 
-  const auto vm = evmc_create_evmone();
+  const evmc::MockedAccount account{0, contract_code_bytes, evmc::bytes32{},
+                                    evmc::uint256be{}};
+  evmc::MockedHost host;
+  host.accounts.insert_or_assign(CONTRACT_ADDRESS, account);
+  const auto host_interface = host.get_interface();
+
+  const auto analysis = evmone::advanced::analyze(
+      evmc_revision::EVMC_LATEST_STABLE_REVISION, contract_code_bytes);
 
   evmc_message call_msg{};
   call_msg.kind = EVMC_CALL;
@@ -62,21 +72,14 @@ int main(int argc, char** argv) {
   call_msg.recipient = CONTRACT_ADDRESS;
   call_msg.sender = CALLER_ADDRESS;
 
-  for (int i = 0; i < num_runs; i++) {
-    evmc::MockedHost host;
-    host.accounts.insert_or_assign(CONTRACT_ADDRESS, evmc::MockedAccount{
-                                                         0,
-                                                         contract_code_bytes,
-                                                         evmc::bytes32{},
-                                                         evmc::uint256be{},
-                                                     });
+  auto state = evmone::advanced::AdvancedExecutionState(
+      call_msg, evmc_revision::EVMC_LATEST_STABLE_REVISION,
+      host.get_interface(), (evmc_host_context*)&host, contract_code_bytes);
 
-    auto start = std::chrono::steady_clock::now();
-    auto call_result =
-        evmc_execute(vm, &host.get_interface(), (evmc_host_context*)&host,
-                     evmc_revision::EVMC_LATEST_STABLE_REVISION, &call_msg,
-                     contract_code_bytes.data(), contract_code_bytes.size());
-    auto end = std::chrono::steady_clock::now();
+  for (int i = 0; i < num_runs; i++) {
+    const auto start = std::chrono::steady_clock::now();
+    const auto call_result = evmone::advanced::execute(state, analysis);
+    const auto end = std::chrono::steady_clock::now();
     check_status(call_result);
 
     using namespace std::literals;

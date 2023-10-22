@@ -4,8 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bytes = "1.4"
 clap = { version = "4.4", features = ["derive"] }
 hex = "0.4"
 primitive-types = { version = "0.12", features = ["rlp"] }
-revm-interpreter = { git = "https://github.com/bluealloy/revm" }
+revm-interpreter = { git = "https://github.com/bluealloy/revm", tag = "v26" }
