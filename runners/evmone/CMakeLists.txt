@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.14)
 include(cmake/CPM.cmake)
 
 CPMAddPackage("gh:CLIUtils/CLI11@2.3.1")
-CPMAddPackage("gh:ethereum/evmone@0.9.1")
+CPMAddPackage("gh:ethereum/evmone@0.10.0")
 
 project(evmone-runner LANGUAGES CXX C)
 
