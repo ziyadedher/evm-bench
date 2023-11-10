@@ -14,7 +14,7 @@ keywords = ["benchmark", "ethereum", "smart-contracts", "ethereum-contract", "be
 [dependencies]
 bytes = "1.5.0"
 chrono = "0.4.31"
-clap = { version = "4.4.7", features = ["derive"] }
+clap = { version = "4.4.8", features = ["derive"] }
 env_logger = "0.10.1"
 glob = "0.3.1"
 hex = "0.4.3"
