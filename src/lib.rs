@@ -89,6 +89,6 @@ pub mod benchmarks;
 pub mod runners;
 pub mod runs;
 
-pub use benchmarks::{compile_all, Benchmark};
-pub use runners::{build_all, Runner};
-pub use runs::execute_all;
+pub use benchmarks::{compile, Benchmark};
+pub use runners::{build, Runner};
+pub use runs::{execute, Run};

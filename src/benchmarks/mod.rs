@@ -1,6 +1,6 @@
 //! Utilities for creating and working with benchmarks.
 //!
-//! The primary entrypoint for this module is the [`compile_all`] function, which compiles all benchmarks under a given
+//! The primary entrypoint for this module is the [`compile`] function, which compiles all benchmarks under a given
 //! path and returns a vector of [`Benchmark`] structs.
 //!
 //! # Examples
@@ -8,11 +8,11 @@
 //! ```no_run
 //! use std::path::PathBuf;
 //!
-//! use evm_bench::benchmarks::compile_all;
+//! use evm_bench::benchmarks::compile;
 //!
 //! let path = PathBuf::from("benchmarks");
 //!
-//! let benchmarks = compile_all(&path);
+//! let benchmarks = compile(&path, None);
 //! ```
 
 use std::{
@@ -71,18 +71,18 @@ impl From<String> for Identifier {
 ///
 /// Encapsulates all the information needed to execute a benchmark, any [`crate::Runner`] can take this struct and run
 /// the benchmark with no additional data needed. Typically, this is produced by the compilation process of the
-/// benchmark, like using the [`compile_all`] function. But it can also be manually constructed in any other way.
+/// benchmark, like using the [`compile`] function. But it can also be manually constructed in any other way.
 ///
 /// # Examples
 ///
 /// ```no_run
 /// use std::path::PathBuf;
 ///
-/// use evm_bench::benchmarks::compile_all;
+/// use evm_bench::benchmarks::compile;
 ///
 /// let path = PathBuf::from("benchmarks");
 ///
-/// let benchmarks = compile_all(&path);
+/// let benchmarks = compile(&path, None);
 /// ```
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Benchmark {
@@ -181,9 +181,12 @@ pub fn find_all_metadata(path: &Path) -> anyhow::Result<BTreeMap<PathBuf, Benchm
 
 /// Compiles all benchmarks under the given path.
 ///
-/// Finds all benchmark metadata files under the given path using [`find_all_metadata`] and compiles all the Solidity
-/// files under the given path using [`ethers_solc`]. It then filters the artifacts to only include those that have
-/// associated benchmark metadata and returns a vector of [`Benchmark`] structs.
+/// Compiles all the Solidity files under the given path using [`ethers_solc`]. It then filters the artifacts to only
+/// include those that have associated benchmark metadata and returns a vector of [`Benchmark`] structs.
+///
+/// If the optional `metadatas` argument is provided, then it will be used to filter the artifacts to only include those
+/// that have associated benchmark metadata. Otherwise, it will search for all benchmark metadata files under the given
+/// path using [`find_all_metadata`].
 ///
 /// # Errors
 ///
@@ -194,14 +197,21 @@ pub fn find_all_metadata(path: &Path) -> anyhow::Result<BTreeMap<PathBuf, Benchm
 /// ```no_run
 /// use std::path::PathBuf;
 ///
-/// use evm_bench::benchmarks::compile_all;
+/// use evm_bench::benchmarks::compile;
 ///
 /// let path = PathBuf::from("benchmarks");
 ///
-/// let benchmarks = compile_all(&path);
+/// let benchmarks = compile(&path, None);
 /// ```
-pub fn compile_all(benchmarks: &Path) -> anyhow::Result<Vec<Benchmark>> {
-    let metadatas = find_all_metadata(benchmarks)?;
+pub fn compile(
+    benchmarks: &Path,
+    metadatas: Option<BTreeMap<PathBuf, BenchmarkMetadata>>,
+) -> anyhow::Result<Vec<Benchmark>> {
+    let metadatas = if let Some(metadatas) = metadatas {
+        metadatas
+    } else {
+        find_all_metadata(benchmarks)?
+    };
 
     log::info!("compiling benchmarks...");
     let benchmarks: Vec<Benchmark> = Project::builder()
@@ -218,7 +228,7 @@ pub fn compile_all(benchmarks: &Path) -> anyhow::Result<Vec<Benchmark>> {
                 .map_err(|err| log::warn!("could not canonicalize source path: {err}, skipping..."))
                 .ok()?;
             let metadata = metadatas.get(&source_path).or_else(|| {
-                log::warn!(
+                log::debug!(
                     "could not find benchmark metadata for {}, skipping...",
                     source_path.display()
                 );

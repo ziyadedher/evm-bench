@@ -1,6 +1,6 @@
 //! Utilities for creating and working with runners.
 //!
-//! The primary entrypoint for this module is the [`build_all`] function, which builds all runners under a given
+//! The primary entrypoint for this module is the [`build`] function, which builds all runners under a given
 //! path and returns a vector of [`Runner`] structs.
 //!
 //! # Examples
@@ -9,14 +9,14 @@
 //! use std::path::PathBuf;
 //!
 //! use bollard::Docker;
-//! use evm_bench::build_all;
+//! use evm_bench::build;
 //!
 //! # #[tokio::main]
 //! # async fn main() -> anyhow::Result<()> {
 //! let runners_path = PathBuf::from("runners");
 //!
 //! let docker = &Docker::connect_with_local_defaults().expect("could not connect to Docker daemon");
-//! let runners = build_all(&runners_path, docker).await.expect("could not build runners");
+//! let runners = build(&runners_path, None, docker).await.expect("could not build runners");
 //! #     Ok(())
 //! # }
 //! ```
@@ -75,7 +75,7 @@ impl From<String> for Identifier {
 /// Total representation of a runner.
 ///
 /// Encapsulates all the information needed to launch a runner, the runner can take any [`crate::Benchmark`] and run
-/// it. Typically, this is produced by building a runner image using something like the [`build_all`] function. But it
+/// it. Typically, this is produced by building a runner image using something like the [`build`] function. But it
 /// can also be manually constructed in any other way.
 ///
 /// # Examples
@@ -84,14 +84,14 @@ impl From<String> for Identifier {
 /// use std::path::PathBuf;
 ///
 /// use bollard::Docker;
-/// use evm_bench::build_all;
+/// use evm_bench::build;
 ///
 /// # #[tokio::main]
 /// # async fn main() -> anyhow::Result<()> {
 /// let runners_path = PathBuf::from("runners");
 ///
 /// let docker = &Docker::connect_with_local_defaults().expect("could not connect to Docker daemon");
-/// let runners = build_all(&runners_path, docker).await.expect("could not build runners");
+/// let runners = build(&runners_path, None, docker).await.expect("could not build runners");
 /// #     Ok(())
 /// # }
 /// ```
@@ -196,7 +196,7 @@ pub fn find_all_metadata(path: &Path) -> anyhow::Result<Vec<(RunnerMetadata, Pat
 /// use std::path::PathBuf;
 ///
 /// use bollard::Docker;
-/// use evm_bench::runners::{build, RunnerMetadata};
+/// use evm_bench::runners::{build_single, RunnerMetadata};
 ///
 ///
 /// # #[tokio::main]
@@ -215,7 +215,7 @@ pub fn find_all_metadata(path: &Path) -> anyhow::Result<Vec<(RunnerMetadata, Pat
 /// #     Ok(())
 /// # }
 /// ```
-pub async fn build(
+pub async fn build_single(
     metadata: RunnerMetadata,
     dockerfile_path: &Path,
     docker: &Docker,
@@ -297,8 +297,9 @@ pub async fn build(
 
 /// Builds all runner images under the given path.
 ///
-/// Finds all runner metadata files under the given path using [`find_all_metadata`] and builds a runner image for each
-/// one. Returns a vector of all the successfully built runners as [`Runner`] structs.
+/// If the optional `metadatas` argument is provided, then it will be used to build the runner images. Otherwise, it
+/// will search for all runner metadata files under the given path using [`find_all_metadata`]. Returns a vector of all
+/// the successfully built runners as [`Runner`] structs.
 ///
 /// # Errors
 ///
@@ -310,28 +311,34 @@ pub async fn build(
 /// use std::path::PathBuf;
 ///
 /// use bollard::Docker;
-/// use evm_bench::runners::build_all;
+/// use evm_bench::runners::build;
 ///
 /// # #[tokio::main]
 /// # async fn main() -> anyhow::Result<()> {
 /// let runners_path = PathBuf::from("runners");
 ///
 /// let docker = &Docker::connect_with_local_defaults().expect("could not connect to Docker daemon");
-/// let runners = build_all(&runners_path, docker).await.expect("could not build runners");
+/// let runners = build(&runners_path, None, docker).await.expect("could not build runners");
 /// #     Ok(())
 /// # }
 /// ```
-pub async fn build_all(path: &Path, docker: &Docker) -> anyhow::Result<Vec<Runner>> {
-    let metadatas = find_all_metadata(path)?;
+pub async fn build(
+    path: &Path,
+    metadatas: Option<Vec<(RunnerMetadata, PathBuf)>>,
+    docker: &Docker,
+) -> anyhow::Result<Vec<Runner>> {
+    let metadatas = if let Some(metadatas) = metadatas {
+        metadatas
+    } else {
+        find_all_metadata(path)?
+    };
 
     log::info!("building runners...");
-    let runners: Vec<Runner> = futures::future::join_all(
-        metadatas
-            .into_iter()
-            .map(|(metadata, dockerfile_path)| async move {
-                build(metadata, &dockerfile_path, docker).await
-            }),
-    )
+    let runners: Vec<Runner> = futures::future::join_all(metadatas.into_iter().map(
+        |(metadata, dockerfile_path)| async move {
+            build_single(metadata, &dockerfile_path, docker).await
+        },
+    ))
     .await
     .into_iter()
     .flatten()

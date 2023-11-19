@@ -1,7 +1,7 @@
 //! Orchestration for running benchmarks on runners.
 //!
 //! Manages starting and running Docker containers for each benchmark on each runner. This is the main entry point for
-//! running benchmarks. The primary function is [`execute_all`], which runs all the benchmarks on all the runners and
+//! running benchmarks. The primary function is [`execute`], which runs all the benchmarks on all the runners and
 //! returns a list of [`Run`]s.
 //!
 //! # Examples
@@ -10,7 +10,7 @@
 //! use std::path::PathBuf;
 //!
 //! use bollard::Docker;
-//! use evm_bench::execute_all;
+//! use evm_bench::execute;
 //!
 //! # #[tokio::main]
 //! # async fn main() -> anyhow::Result<()> {
@@ -19,14 +19,15 @@
 //!
 //! let docker = &Docker::connect_with_local_defaults().expect("could not connect to Docker daemon");
 //!
-//! let runs = execute_all(&benchmarks_path, &runners_path, docker).await.expect("could not run benchmarks");
+//! let runs = execute(&benchmarks_path, None, &runners_path, None, docker).await.expect("could not run benchmarks");
 //! #     Ok(())
 //! # }
 //! ```
 
 use std::{
+    collections::BTreeMap,
     fmt::{self, Display, Formatter},
-    path::Path,
+    path::{Path, PathBuf},
     time::Duration,
 };
 
@@ -41,9 +42,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     benchmarks::{
-        compile_all, Benchmark, BenchmarkMetadataCost, Identifier as BenchmarkIdentifier,
+        compile, Benchmark, BenchmarkMetadata, BenchmarkMetadataCost,
+        Identifier as BenchmarkIdentifier,
     },
-    runners::{build_all, Identifier as RunnerIdentifier, Runner},
+    runners::{build, Identifier as RunnerIdentifier, Runner, RunnerMetadata},
 };
 
 /// Unique identifier for this run.
@@ -86,7 +88,7 @@ impl From<String> for Identifier {
 ///
 /// Encapsulates all the relevant information from a benchmarking run. This is the result of running a benchmark on a
 /// runner, and contains the durations of each pass of the benchmark. Typically, this is produced by the runnin
-/// process using something like the [`execute_all`] function.
+/// process using something like the [`execute`] function.
 ///
 /// # Examples
 ///
@@ -94,7 +96,7 @@ impl From<String> for Identifier {
 /// use std::path::PathBuf;
 ///
 /// use bollard::Docker;
-/// use evm_bench::execute_all;
+/// use evm_bench::execute;
 ///
 /// # #[tokio::main]
 /// # async fn main() -> anyhow::Result<()> {
@@ -102,7 +104,7 @@ impl From<String> for Identifier {
 /// let runners_path = PathBuf::from("runners");
 ///
 /// let docker = &Docker::connect_with_local_defaults().expect("could not connect to Docker daemon");
-/// let runs = execute_all(&benchmarks_path, &runners_path, docker).await.expect("could not run benchmarks");
+/// let runs = execute(&benchmarks_path, None, &runners_path, None, docker).await.expect("could not run benchmarks");
 /// #     Ok(())
 /// # }
 /// ```
@@ -144,8 +146,8 @@ fn num_runs_for_benchmark_cost(cost: BenchmarkMetadataCost) -> u32 {
 /// use std::path::PathBuf;
 ///
 /// use bollard::Docker;
-/// use evm_bench::{compile_all, build_all};
-/// use evm_bench::runs::execute;
+/// use evm_bench::{compile, build};
+/// use evm_bench::runs::execute_single;
 ///
 /// # #[tokio::main]
 /// # async fn main() -> anyhow::Result<()> {
@@ -153,14 +155,18 @@ fn num_runs_for_benchmark_cost(cost: BenchmarkMetadataCost) -> u32 {
 /// let runners_path = PathBuf::from("runners");
 ///
 /// let docker = &Docker::connect_with_local_defaults().expect("could not connect to Docker daemon");
-/// let benchmarks = compile_all(&benchmarks_path).expect("could not compile benchmarks");
-/// let runners = build_all(&runners_path, docker).await.expect("could not build runners");
-/// let runs = execute(&benchmarks[0], &runners[0], docker).await.expect("could not run benchmarks");
+/// let benchmarks = compile(&benchmarks_path, None).expect("could not compile benchmarks");
+/// let runners = build(&runners_path, None, docker).await.expect("could not build runners");
+/// let runs = execute_single(&benchmarks[0], &runners[0], docker).await.expect("could not run benchmarks");
 /// #     Ok(())
 /// # }
 /// ```
 #[allow(clippy::too_many_lines)]
-pub async fn execute(benchmark: &Benchmark, runner: &Runner, docker: &Docker) -> Option<Run> {
+pub async fn execute_single(
+    benchmark: &Benchmark,
+    runner: &Runner,
+    docker: &Docker,
+) -> Option<Run> {
     let run_identifier = Identifier(format!("{}_{}", runner.identifier, benchmark.identifier));
     let container_name = format!("emv-bench_{run_identifier}");
     let cmd = vec![
@@ -291,12 +297,12 @@ pub async fn execute(benchmark: &Benchmark, runner: &Runner, docker: &Docker) ->
 /// Runs all benchmarks on all runners.
 ///
 /// Runs all the benchmarks on all the runners and returns a list of [`Run`]s. This is a convenience function that
-/// simply calls [`compile_all`], [`build_all`], and [`execute`] in sequence.
+/// simply calls [`compile`], [`build`], and [`execute`] in sequence.
 ///
 /// # Errors
 ///
-/// If any of the steps fail, then this function will return an error. This includes errors from [`compile_all`],
-/// [`build_all`], and [`execute`].
+/// If any of the steps fail, then this function will return an error. This includes errors from [`compile`],
+/// [`build`], and [`execute`].
 ///
 /// # Examples
 ///
@@ -304,7 +310,7 @@ pub async fn execute(benchmark: &Benchmark, runner: &Runner, docker: &Docker) ->
 /// use std::path::PathBuf;
 ///
 /// use bollard::Docker;
-/// use evm_bench::execute_all;
+/// use evm_bench::execute;
 ///
 /// # #[tokio::main]
 /// # async fn main() -> anyhow::Result<()> {
@@ -313,17 +319,19 @@ pub async fn execute(benchmark: &Benchmark, runner: &Runner, docker: &Docker) ->
 ///
 /// let docker = &Docker::connect_with_local_defaults().expect("could not connect to Docker daemon");
 ///
-/// let runs = execute_all(&benchmarks_path, &runners_path, docker).await.expect("could not run benchmarks");
+/// let runs = execute(&benchmarks_path, None, &runners_path, None, docker).await.expect("could not run benchmarks");
 /// #     Ok(())
 /// # }
 /// ```
-pub async fn execute_all<'a>(
+pub async fn execute<'a>(
     benchmarks_path: &Path,
+    benchmark_metadatas: Option<BTreeMap<PathBuf, BenchmarkMetadata>>,
     runners_path: &Path,
+    runner_metadatas: Option<Vec<(RunnerMetadata, PathBuf)>>,
     docker: &Docker,
 ) -> anyhow::Result<Vec<Run>> {
-    let benchmarks = compile_all(benchmarks_path)?;
-    let runners = build_all(runners_path, docker).await?;
+    let benchmarks = compile(benchmarks_path, benchmark_metadatas)?;
+    let runners = build(runners_path, runner_metadatas, docker).await?;
 
     log::info!(
         "running {} benchmarks on {} runners...",
@@ -333,7 +341,7 @@ pub async fn execute_all<'a>(
     let run_futures = runners.iter().flat_map(|runner| {
         benchmarks
             .iter()
-            .map(|benchmark| async { execute(benchmark, runner, docker).await })
+            .map(|benchmark| async { execute_single(benchmark, runner, docker).await })
     });
 
     // 🔮 This is bad futures usage! We'd typically `join_all` here so we can have all the awaiting for all the futures

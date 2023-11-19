@@ -4,7 +4,11 @@
 //! functions in the library. For more information on how to use the library, see the documentation for the library.
 //! For more information on how to use the CLI tool, see the runtime help documentation for the CLI tool.
 
-use std::{fs, path::PathBuf};
+use std::{
+    collections::BTreeMap,
+    fs,
+    path::{Path, PathBuf},
+};
 
 use anyhow::Context;
 use bollard::Docker;
@@ -12,7 +16,11 @@ use chrono::Utc;
 use clap::{Args, Parser, Subcommand};
 use serde_json::json;
 
-use evm_bench::{build_all, compile_all, execute_all};
+use evm_bench::{
+    benchmarks::{self, BenchmarkMetadata},
+    build, compile, execute,
+    runners::{self, RunnerMetadata},
+};
 
 #[derive(Parser)]
 #[command(author, version, about)]
@@ -23,10 +31,25 @@ struct Cli {
 }
 
 #[derive(Args)]
+#[group(multiple = false)]
+struct IncludeExcludeArgs {
+    /// List of runners/benchmarks to include (by ID), if provided only these will be included
+    #[arg(short, long)]
+    include: Vec<String>,
+
+    /// List of runners/benchmarks to exclude (by ID), if provided these will be excluded
+    #[arg(short, long)]
+    exclude: Vec<String>,
+}
+
+#[derive(Args)]
 struct BenchmarkArgs {
     /// Path to a directory containing benchmark metadata files
     #[arg(short, long, default_value = "benchmarks")]
     benchmarks: PathBuf,
+
+    #[command(flatten)]
+    include_exclude_args: IncludeExcludeArgs,
 }
 
 #[derive(Args)]
@@ -34,6 +57,9 @@ struct RunnerArgs {
     /// Path to a directory containing runner metadata files
     #[arg(short, long, default_value = "runners")]
     runners: PathBuf,
+
+    #[command(flatten)]
+    include_exclude_args: IncludeExcludeArgs,
 }
 
 #[derive(Args)]
@@ -92,6 +118,9 @@ struct BuildAllArgs {
 
     #[command(flatten)]
     runner_args: RunnerArgs,
+
+    #[command(flatten)]
+    include_exclude_args: IncludeExcludeArgs,
 }
 
 #[derive(Args)]
@@ -104,6 +133,9 @@ struct RunArgs {
 
     #[command(flatten)]
     output_args: OutputArgs,
+
+    #[command(flatten)]
+    include_exclude_args: IncludeExcludeArgs,
 }
 
 #[derive(Args)]
@@ -137,6 +169,40 @@ async fn connect_to_docker() -> anyhow::Result<Docker> {
     Ok(docker)
 }
 
+fn construct_filtered_benchmark_metadatas(
+    benchmarks: &Path,
+    include_exclude_args: &IncludeExcludeArgs,
+) -> anyhow::Result<BTreeMap<PathBuf, BenchmarkMetadata>> {
+    let mut benchmark_metadatas = benchmarks::find_all_metadata(benchmarks)?;
+
+    if !include_exclude_args.include.is_empty() {
+        benchmark_metadatas
+            .retain(|_path, metadata| include_exclude_args.include.contains(&metadata.name));
+    } else if !include_exclude_args.exclude.is_empty() {
+        benchmark_metadatas
+            .retain(|_path, metadata| !include_exclude_args.exclude.contains(&metadata.name));
+    }
+
+    Ok(benchmark_metadatas)
+}
+
+fn construct_filtered_runner_metadatas(
+    runners: &Path,
+    include_exclude_args: &IncludeExcludeArgs,
+) -> anyhow::Result<Vec<(RunnerMetadata, PathBuf)>> {
+    let mut runner_metadatas = runners::find_all_metadata(runners)?;
+
+    if !include_exclude_args.include.is_empty() {
+        runner_metadatas
+            .retain(|(metadata, _path)| include_exclude_args.include.contains(&metadata.name));
+    } else if !include_exclude_args.exclude.is_empty() {
+        runner_metadatas
+            .retain(|(metadata, _path)| !include_exclude_args.exclude.contains(&metadata.name));
+    }
+
+    Ok(runner_metadatas)
+}
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     human_panic::setup_panic!();
@@ -149,42 +215,96 @@ async fn main() -> anyhow::Result<()> {
     match args.cmd {
         Commands::Build(BuildArgs { cmd }) => match cmd {
             BuildCommands::Benchmarks(BuildBenchmarksArgs {
-                benchmark_args: BenchmarkArgs { benchmarks },
+                benchmark_args:
+                    BenchmarkArgs {
+                        benchmarks,
+                        include_exclude_args,
+                    },
             }) => {
                 let benchmarks = benchmarks.canonicalize()?;
-                compile_all(&benchmarks)?;
+                let metadatas =
+                    construct_filtered_benchmark_metadatas(&benchmarks, &include_exclude_args)?;
+
+                compile(&benchmarks, Some(metadatas))?;
             }
             BuildCommands::Runners(BuildRunnersArgs {
-                runner_args: RunnerArgs { runners },
+                runner_args:
+                    RunnerArgs {
+                        runners,
+                        include_exclude_args,
+                    },
             }) => {
                 let runners = runners.canonicalize()?;
-                build_all(&runners, &connect_to_docker().await?).await?;
+                let metadatas =
+                    construct_filtered_runner_metadatas(&runners, &include_exclude_args)?;
+
+                build(&runners, Some(metadatas), &connect_to_docker().await?).await?;
             }
             BuildCommands::All(BuildAllArgs {
-                benchmark_args: BenchmarkArgs { benchmarks },
-                runner_args: RunnerArgs { runners },
+                benchmark_args:
+                    BenchmarkArgs {
+                        benchmarks,
+                        include_exclude_args: _,
+                    },
+                runner_args:
+                    RunnerArgs {
+                        runners,
+                        include_exclude_args: _,
+                    },
+                include_exclude_args,
             }) => {
                 let benchmarks = benchmarks.canonicalize()?;
+                let benchmark_metadatas =
+                    construct_filtered_benchmark_metadatas(&benchmarks, &include_exclude_args)?;
+
                 let runners = runners.canonicalize()?;
-                compile_all(&benchmarks)?;
-                build_all(&runners, &connect_to_docker().await?).await?;
+                let runner_metadatas =
+                    construct_filtered_runner_metadatas(&runners, &include_exclude_args)?;
+
+                compile(&benchmarks, Some(benchmark_metadatas))?;
+                build(
+                    &runners,
+                    Some(runner_metadatas),
+                    &connect_to_docker().await?,
+                )
+                .await?;
             }
         },
 
         Commands::Run(RunArgs {
-            benchmark_args: BenchmarkArgs { benchmarks },
-            runner_args: RunnerArgs { runners },
+            benchmark_args:
+                BenchmarkArgs {
+                    benchmarks,
+                    include_exclude_args: _,
+                },
+            runner_args:
+                RunnerArgs {
+                    runners,
+                    include_exclude_args: _,
+                },
             output_args: OutputArgs { output, no_output },
+            include_exclude_args,
         }) => {
             let benchmarks = benchmarks.canonicalize()?;
-            let runners = runners.canonicalize()?;
+            let benchmark_metadatas =
+                construct_filtered_benchmark_metadatas(&benchmarks, &include_exclude_args)?;
 
-            let runs = execute_all(&benchmarks, &runners, &connect_to_docker().await?)
-                .await
-                .map_err(|err| {
-                    log::error!("{err}");
-                    err
-                })?;
+            let runners = runners.canonicalize()?;
+            let runner_metadatas =
+                construct_filtered_runner_metadatas(&runners, &include_exclude_args)?;
+
+            let runs = execute(
+                &benchmarks,
+                Some(benchmark_metadatas),
+                &runners,
+                Some(runner_metadatas),
+                &connect_to_docker().await?,
+            )
+            .await
+            .map_err(|err| {
+                log::error!("{err}");
+                err
+            })?;
 
             if !no_output {
                 let output = output.canonicalize()?;
