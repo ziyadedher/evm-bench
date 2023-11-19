@@ -65,7 +65,7 @@ struct RunnerArgs {
 #[derive(Args)]
 struct OutputArgs {
     /// Path to a directory to dump outputs in
-    #[arg(short, long, default_value = "results")]
+    #[arg(short, long, default_value = "results/outputs")]
     output: PathBuf,
 
     /// If true, runs the benchmarks but does not output any results
@@ -139,7 +139,10 @@ struct RunArgs {
 }
 
 #[derive(Args)]
-struct ResultsArgs {}
+struct ResultsArgs {
+    #[command(flatten)]
+    output_args: OutputArgs,
+}
 
 async fn connect_to_docker() -> anyhow::Result<Docker> {
     log::info!("attempting to connect to Docker daemon...");
@@ -313,7 +316,7 @@ async fn main() -> anyhow::Result<()> {
                 }))?;
 
                 let output_file_path = output.join(format!(
-                    "results.{}.json",
+                    "outputs.{}.json",
                     start_time.format("%Y-%m-%dT%H-%M-%S%z")
                 ));
                 log::info!(
