@@ -91,6 +91,6 @@ pub mod runners;
 pub mod runs;
 
 pub use benchmarks::{compile, Benchmark};
-pub use results::write_outputs;
+pub use results::{read_latest_outputs, write_outputs};
 pub use runners::{build, Runner};
 pub use runs::{execute, Run};

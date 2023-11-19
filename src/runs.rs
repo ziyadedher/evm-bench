@@ -108,7 +108,7 @@ impl From<String> for Identifier {
 /// #     Ok(())
 /// # }
 /// ```
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Run {
     /// Unique identifier for this run.
     pub identifier: Identifier,
@@ -118,6 +118,8 @@ pub struct Run {
     pub benchmark_identifier: BenchmarkIdentifier,
     /// Durations of each pass of the benchmark.
     pub durations: Vec<Duration>,
+    /// Average run time of the benchmark.
+    pub average_duration: Duration,
 }
 
 fn num_runs_for_benchmark_cost(cost: BenchmarkMetadataCost) -> u32 {
@@ -286,11 +288,20 @@ pub async fn execute_single(
         }
     }
 
-    result.map(|durations| Run {
-        identifier: run_identifier.clone(),
-        runner_identifier: runner.identifier.clone(),
-        benchmark_identifier: benchmark.identifier.clone(),
-        durations,
+    result.map(|durations| {
+        let average_duration = if durations.is_empty() {
+            Duration::from_secs(0)
+        } else {
+            durations.iter().sum::<Duration>() / u32::try_from(durations.len()).unwrap()
+        };
+
+        Run {
+            identifier: run_identifier.clone(),
+            runner_identifier: runner.identifier.clone(),
+            benchmark_identifier: benchmark.identifier.clone(),
+            durations,
+            average_duration,
+        }
     })
 }
 

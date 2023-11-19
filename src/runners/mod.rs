@@ -51,7 +51,7 @@ pub const FILE_PATTERN: &str = "**/*.runner.json";
 ///
 /// assert_eq!(identifier.to_string(), "foo");
 /// ```
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct Identifier(String);
 
 impl Display for Identifier {

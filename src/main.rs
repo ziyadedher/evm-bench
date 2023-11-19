@@ -16,7 +16,8 @@ use clap::{Args, Parser, Subcommand};
 
 use evm_bench::{
     benchmarks::{self, BenchmarkMetadata},
-    build, compile, execute,
+    build, compile, execute, read_latest_outputs,
+    results::create_markdown_table,
     runners::{self, RunnerMetadata},
     write_outputs,
 };
@@ -31,14 +32,14 @@ struct Cli {
 
 #[derive(Args)]
 #[group(multiple = false)]
-struct IncludeExcludeArgs {
-    /// List of runners/benchmarks to include (by ID), if provided only these will be included
-    #[arg(short, long)]
-    include: Vec<String>,
+struct BenchmarksIncludeExcludeArgs {
+    /// List of benchmarks to include (by ID), if provided only these will be included
+    #[arg(long)]
+    include_benchmarks: Vec<String>,
 
-    /// List of runners/benchmarks to exclude (by ID), if provided these will be excluded
-    #[arg(short, long)]
-    exclude: Vec<String>,
+    /// List of benchmarks to exclude (by ID), if provided these will be excluded
+    #[arg(long)]
+    exclude_benchmarks: Vec<String>,
 }
 
 #[derive(Args)]
@@ -48,7 +49,19 @@ struct BenchmarkArgs {
     benchmarks: PathBuf,
 
     #[command(flatten)]
-    include_exclude_args: IncludeExcludeArgs,
+    include_exclude_args: BenchmarksIncludeExcludeArgs,
+}
+
+#[derive(Args)]
+#[group(multiple = false)]
+struct RunnersIncludeExcludeArgs {
+    /// List of runners to include (by ID), if provided only these will be included
+    #[arg(long)]
+    include_runners: Vec<String>,
+
+    /// List of runners to exclude (by ID), if provided these will be excluded
+    #[arg(long)]
+    exclude_runners: Vec<String>,
 }
 
 #[derive(Args)]
@@ -58,7 +71,7 @@ struct RunnerArgs {
     runners: PathBuf,
 
     #[command(flatten)]
-    include_exclude_args: IncludeExcludeArgs,
+    include_exclude_args: RunnersIncludeExcludeArgs,
 }
 
 #[derive(Args)]
@@ -117,9 +130,6 @@ struct BuildAllArgs {
 
     #[command(flatten)]
     runner_args: RunnerArgs,
-
-    #[command(flatten)]
-    include_exclude_args: IncludeExcludeArgs,
 }
 
 #[derive(Args)]
@@ -132,15 +142,13 @@ struct RunArgs {
 
     #[command(flatten)]
     output_args: OutputArgs,
-
-    #[command(flatten)]
-    include_exclude_args: IncludeExcludeArgs,
 }
 
 #[derive(Args)]
 struct ResultsArgs {
-    #[command(flatten)]
-    output_args: OutputArgs,
+    /// Path to a directory to read outputs from
+    #[arg(short, long, default_value = "results/outputs")]
+    output: PathBuf,
 }
 
 async fn connect_to_docker() -> anyhow::Result<Docker> {
@@ -150,7 +158,7 @@ async fn connect_to_docker() -> anyhow::Result<Docker> {
     let docker_version = &docker
         .version()
         .await
-        .context("could not get Docker version")?;
+        .context("could not get Docker version, is Docker running?")?;
     log::info!(
         "connected to Docker daemon with version {} (api: {}, os/arch: {}/{})",
         docker_version
@@ -173,16 +181,18 @@ async fn connect_to_docker() -> anyhow::Result<Docker> {
 
 fn construct_filtered_benchmark_metadatas(
     benchmarks: &Path,
-    include_exclude_args: &IncludeExcludeArgs,
+    include_exclude_args: &BenchmarksIncludeExcludeArgs,
 ) -> anyhow::Result<BTreeMap<PathBuf, BenchmarkMetadata>> {
+    let BenchmarksIncludeExcludeArgs {
+        include_benchmarks: include,
+        exclude_benchmarks: exclude,
+    } = include_exclude_args;
     let mut benchmark_metadatas = benchmarks::find_all_metadata(benchmarks)?;
 
-    if !include_exclude_args.include.is_empty() {
-        benchmark_metadatas
-            .retain(|_path, metadata| include_exclude_args.include.contains(&metadata.name));
-    } else if !include_exclude_args.exclude.is_empty() {
-        benchmark_metadatas
-            .retain(|_path, metadata| !include_exclude_args.exclude.contains(&metadata.name));
+    if !include.is_empty() {
+        benchmark_metadatas.retain(|_path, metadata| include.contains(&metadata.name));
+    } else if !exclude.is_empty() {
+        benchmark_metadatas.retain(|_path, metadata| !exclude.contains(&metadata.name));
     }
 
     Ok(benchmark_metadatas)
@@ -190,16 +200,18 @@ fn construct_filtered_benchmark_metadatas(
 
 fn construct_filtered_runner_metadatas(
     runners: &Path,
-    include_exclude_args: &IncludeExcludeArgs,
+    include_exclude_args: &RunnersIncludeExcludeArgs,
 ) -> anyhow::Result<Vec<(RunnerMetadata, PathBuf)>> {
+    let RunnersIncludeExcludeArgs {
+        include_runners: include,
+        exclude_runners: exclude,
+    } = include_exclude_args;
     let mut runner_metadatas = runners::find_all_metadata(runners)?;
 
-    if !include_exclude_args.include.is_empty() {
-        runner_metadatas
-            .retain(|(metadata, _path)| include_exclude_args.include.contains(&metadata.name));
-    } else if !include_exclude_args.exclude.is_empty() {
-        runner_metadatas
-            .retain(|(metadata, _path)| !include_exclude_args.exclude.contains(&metadata.name));
+    if !include.is_empty() {
+        runner_metadatas.retain(|(metadata, _path)| include.contains(&metadata.name));
+    } else if !exclude.is_empty() {
+        runner_metadatas.retain(|(metadata, _path)| !exclude.contains(&metadata.name));
     }
 
     Ok(runner_metadatas)
@@ -246,22 +258,23 @@ async fn main() -> anyhow::Result<()> {
                 benchmark_args:
                     BenchmarkArgs {
                         benchmarks,
-                        include_exclude_args: _,
+                        include_exclude_args: benchmarks_include_exclude_args,
                     },
                 runner_args:
                     RunnerArgs {
                         runners,
-                        include_exclude_args: _,
+                        include_exclude_args: runners_include_exclude_args,
                     },
-                include_exclude_args,
             }) => {
                 let benchmarks = benchmarks.canonicalize()?;
-                let benchmark_metadatas =
-                    construct_filtered_benchmark_metadatas(&benchmarks, &include_exclude_args)?;
+                let benchmark_metadatas = construct_filtered_benchmark_metadatas(
+                    &benchmarks,
+                    &benchmarks_include_exclude_args,
+                )?;
 
                 let runners = runners.canonicalize()?;
                 let runner_metadatas =
-                    construct_filtered_runner_metadatas(&runners, &include_exclude_args)?;
+                    construct_filtered_runner_metadatas(&runners, &runners_include_exclude_args)?;
 
                 compile(&benchmarks, Some(benchmark_metadatas))?;
                 build(
@@ -277,23 +290,24 @@ async fn main() -> anyhow::Result<()> {
             benchmark_args:
                 BenchmarkArgs {
                     benchmarks,
-                    include_exclude_args: _,
+                    include_exclude_args: benchmarks_include_exclude_args,
                 },
             runner_args:
                 RunnerArgs {
                     runners,
-                    include_exclude_args: _,
+                    include_exclude_args: runners_include_exclude_args,
                 },
             output_args: OutputArgs { output, no_output },
-            include_exclude_args,
         }) => {
             let benchmarks = benchmarks.canonicalize()?;
-            let benchmark_metadatas =
-                construct_filtered_benchmark_metadatas(&benchmarks, &include_exclude_args)?;
+            let benchmark_metadatas = construct_filtered_benchmark_metadatas(
+                &benchmarks,
+                &benchmarks_include_exclude_args,
+            )?;
 
             let runners = runners.canonicalize()?;
             let runner_metadatas =
-                construct_filtered_runner_metadatas(&runners, &include_exclude_args)?;
+                construct_filtered_runner_metadatas(&runners, &runners_include_exclude_args)?;
 
             let runs = execute(
                 &benchmarks,
@@ -310,8 +324,10 @@ async fn main() -> anyhow::Result<()> {
             }
         }
 
-        Commands::Results(_results_args) => {
-            log::error!("results subcommand not implemented yet");
+        Commands::Results(ResultsArgs { output }) => {
+            let output = output.canonicalize()?;
+            let (_, runs) = read_latest_outputs(&output)?;
+            println!("{}", create_markdown_table(&runs)?);
         }
     }
 
