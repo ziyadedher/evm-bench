@@ -86,9 +86,11 @@
 #![warn(clippy::cargo)]
 
 pub mod benchmarks;
+pub mod results;
 pub mod runners;
 pub mod runs;
 
 pub use benchmarks::{compile, Benchmark};
+pub use results::write_outputs;
 pub use runners::{build, Runner};
 pub use runs::{execute, Run};

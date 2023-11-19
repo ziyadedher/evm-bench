@@ -6,7 +6,6 @@
 
 use std::{
     collections::BTreeMap,
-    fs,
     path::{Path, PathBuf},
 };
 
@@ -14,12 +13,12 @@ use anyhow::Context;
 use bollard::Docker;
 use chrono::Utc;
 use clap::{Args, Parser, Subcommand};
-use serde_json::json;
 
 use evm_bench::{
     benchmarks::{self, BenchmarkMetadata},
     build, compile, execute,
     runners::{self, RunnerMetadata},
+    write_outputs,
 };
 
 #[derive(Parser)]
@@ -303,32 +302,11 @@ async fn main() -> anyhow::Result<()> {
                 Some(runner_metadatas),
                 &connect_to_docker().await?,
             )
-            .await
-            .map_err(|err| {
-                log::error!("{err}");
-                err
-            })?;
+            .await?;
 
             if !no_output {
                 let output = output.canonicalize()?;
-                let results = serde_json::to_string_pretty(&json!({
-                    "runs": runs,
-                }))?;
-
-                let output_file_path = output.join(format!(
-                    "outputs.{}.json",
-                    start_time.format("%Y-%m-%dT%H-%M-%S%z")
-                ));
-                log::info!(
-                    "writing result output to {}...",
-                    output_file_path.to_string_lossy()
-                );
-                fs::create_dir_all(&output)
-                    .context("could not create output directory structure")?;
-                fs::write(&output_file_path, results).context(format!(
-                    "could not write to output file {}",
-                    output_file_path.to_string_lossy()
-                ))?;
+                write_outputs(&runs, &output, &start_time)?;
             }
         }
 
