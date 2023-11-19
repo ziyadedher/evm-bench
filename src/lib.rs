@@ -26,15 +26,8 @@
 //! $ evm-bench --help
 //! 🚀🪑 evm-bench is a suite of Ethereum Virtual Machine stress tests and benchmarks.
 //!
-//! Usage: evm-bench [OPTIONS]
-//!
-//! Options:
-//!   -b, --benchmarks <BENCHMARKS>  Path to a directory containing benchmark metadata files [default: benchmarks]
-//!   -r, --runners <RUNNERS>        Path to a directory containing runner metadata files [default: runners]
-//!   -o, --output <OUTPUT>          Path to a directory to dump outputs in [default: results]
-//!       --collect-sysinfo          If true, collects system information (e.g. CPU, memory, etc...) in the output
-//!   -h, --help                     Print help
-//!   -V, --version                  Print version
+//! Usage: evm-bench <COMMAND>
+//! [... rest ommitted ...]
 //! ```
 //!
 //! Note that the executable is not shipped with the existing [suite](#suite) of runners and benchmarks. You need to
@@ -62,7 +55,7 @@
 //!
 //! # Examples
 //! ## Using Arbitrary Runners and Benchmarks
-//!
+//! TODO(ziyadedher): add details here
 //!
 //! ## Using the Existing Suite
 //! The easiest way to reproduce the benchmark results is to clone the [repository][repo] and run the evm-bench binary
