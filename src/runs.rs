@@ -142,6 +142,11 @@ fn num_runs_for_benchmark_cost(cost: BenchmarkMetadataCost) -> u32 {
 /// If a fatal error occurs during the run, such as the container failing to start or the output of the benchmark not
 /// being parseable, then this function will return `None` and log the error.
 ///
+/// # Panics
+///
+/// If we hit some math or number conversion error, then this function will panic. This should never happen, but if it
+/// does, then it's a bug and should be reported.
+///
 /// # Examples
 ///
 /// ```no_run
@@ -307,8 +312,11 @@ pub async fn execute_single(
 
 /// Runs all benchmarks on all runners.
 ///
-/// Runs all the benchmarks on all the runners and returns a list of [`Run`]s. This is a convenience function that
-/// simply calls [`compile`], [`build`], and [`execute`] in sequence.
+/// If the optional "metadatas" arguments are provided, then the benchmarks and runners will be filtered by the provided
+/// metadata. If the optional "metadatas" arguments are not provided, then all benchmarks and runners will be used.
+///
+/// Returns a list of [`Run`]s. This is a convenience function that simply calls [`compile`], [`build`], and
+/// [`execute`] in sequence.
 ///
 /// # Errors
 ///
