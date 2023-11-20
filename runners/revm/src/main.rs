@@ -51,10 +51,10 @@ fn main() {
     let bytecode_hash = bytecode.hash_slow();
     let contract = Box::new(Contract::new_env(&env, bytecode, bytecode_hash));
 
-    let mut interpreter = Interpreter::new(contract, u64::MAX, false);
-    let mut host: DummyHost = DummyHost::new(env);
-
     for _ in 0..args.num_runs {
+        let mut interpreter = Interpreter::new(contract.clone(), u64::MAX, false);
+        let mut host: DummyHost = DummyHost::new(env.clone());
+
         let timer = Instant::now();
         let reason = interpreter.run::<_, LatestSpec>(&mut host);
         let dur = timer.elapsed();
