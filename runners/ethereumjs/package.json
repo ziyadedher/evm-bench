@@ -9,7 +9,7 @@
     "@ethereumjs/util": "8.1.0",
     "@ethereumjs/vm": "6.5.0",
     "@types/node": "18.18.13",
-    "commander": "10.0.1",
+    "commander": "11.1.0",
     "deno": "0.1.1",
     "ts-node": "10.9.2",
     "typescript": "5.3.3"
