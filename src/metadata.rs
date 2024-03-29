@@ -1,11 +1,10 @@
+use glob::glob;
+use serde::{Deserialize, Serialize};
 use std::{
     collections::HashSet,
     error, fs,
     path::{Path, PathBuf},
 };
-
-use glob::glob;
-use serde::{Deserialize, Serialize};
 
 pub trait MetadataParser
 where

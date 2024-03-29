@@ -4,10 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bytes = "1.5"
-clap = { version = "4.5.3", features = ["derive"] }
-hex = "0.4"
-primitive-types = { version = "0.11", features = ["rlp"] }
-# from branch primitives
-revm-interpreter = { git = "https://github.com/bluealloy/revm", rev="3fda52e", package="revm-interpreter"}
-
+clap = { version = "4", features = ["derive"] }
+revm = "7.2.0"
