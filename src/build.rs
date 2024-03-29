@@ -1,3 +1,4 @@
+use crate::metadata::Benchmark;
 use std::{
     collections::HashSet,
     error,
@@ -5,10 +6,7 @@ use std::{
     path::{Path, PathBuf},
     process::Command,
 };
-
 use users::{get_current_gid, get_current_uid};
-
-use crate::metadata::Benchmark;
 
 #[derive(Clone, Debug)]
 struct BuildContext {

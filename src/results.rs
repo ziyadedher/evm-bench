@@ -1,3 +1,8 @@
+use crate::{
+    metadata::{Benchmark, Runner},
+    run::{Results, RunResult},
+};
+use serde::{Deserialize, Serialize};
 use std::{
     collections::{HashMap, HashSet},
     error,
@@ -6,15 +11,7 @@ use std::{
     path::{Path, PathBuf},
     time::Duration,
 };
-
-use chrono;
-use serde::{Deserialize, Serialize};
 use tabled::{builder::Builder, settings::Style};
-
-use crate::{
-    metadata::{Benchmark, Runner},
-    run::{Results, RunResult},
-};
 
 #[derive(Deserialize, Serialize)]
 struct ResultsFormatted {

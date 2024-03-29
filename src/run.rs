@@ -1,15 +1,13 @@
+use crate::{
+    build::BuiltBenchmark,
+    metadata::{Benchmark, Runner},
+};
+use serde::{Deserialize, Serialize};
 use std::{
     collections::{HashMap, HashSet},
     error,
     process::Command,
     time::Duration,
-};
-
-use serde::{Deserialize, Serialize};
-
-use crate::{
-    build::BuiltBenchmark,
-    metadata::{Benchmark, Runner},
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
