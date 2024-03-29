@@ -1,15 +1,14 @@
-use std::{fs, path::PathBuf, str::FromStr, time::Instant};
-
-use bytes::Bytes;
 use clap::Parser;
-use revm_interpreter::{
-    analysis::to_analysed,
-    primitives::{Bytecode, Env, LatestSpec, TransactTo, B160},
-    Contract, DummyHost, InstructionResult, Interpreter,
+use revm::{
+    interpreter::{
+        opcode::make_instruction_table,
+        primitives::{address, hex, Bytes, Env, LatestSpec, TransactTo},
+        Contract, DummyHost, Interpreter, SharedMemory,
+    },
+    primitives::{ExecutionResult, Output, ResultAndState},
+    Evm,
 };
-//use revm-interpreter::{}
-
-extern crate alloc;
+use std::{fs, path::PathBuf, time::Instant};
 
 /// Revolutionary EVM (revm) runner interface
 #[derive(Parser, Debug)]
@@ -28,14 +27,10 @@ struct Args {
     num_runs: u8,
 }
 
-const CALLER_ADDRESS: &str = "0x1000000000000000000000000000000000000001";
-
 fn main() {
     let args = Args::parse();
 
-    let caller_address = B160::from_str(CALLER_ADDRESS).unwrap();
-
-    let contract_code: Bytes =
+    let creation_code: Bytes =
         hex::decode(fs::read_to_string(args.contract_code_path).expect("unable to open file"))
             .expect("could not hex decode contract code")
             .into();
@@ -43,45 +38,61 @@ fn main() {
         .expect("could not hex decode calldata")
         .into();
 
-    // Set up the EVM with a database and create the contract
-    let mut env = Env::default();
-    env.tx.caller = caller_address;
-    env.tx.transact_to = TransactTo::create();
-    env.tx.data = calldata.clone();
+    let caller = address!("1000000000000000000000000000000000000001");
 
-    let bytecode = to_analysed::<LatestSpec>(Bytecode::new_raw(contract_code));
+    // Set up the EVM to create the contract.
+    let mut create_env = Env::default();
+    create_env.tx.caller = caller;
+    create_env.tx.transact_to = TransactTo::create();
+    create_env.tx.data = creation_code;
 
-    // revm interpreter. (rakita note: should be simplified in one of next version.)
-    let contract = Contract::new_env::<LatestSpec>(&env, bytecode);
-    let mut host = DummyHost::new(env.clone());
-    let mut interpreter = Interpreter::new(contract, u64::MAX, false);
-    let reason = interpreter.run::<_, LatestSpec>(&mut host);
+    let mut evm = Evm::builder()
+        .with_empty_db()
+        .with_env(create_env.into())
+        .build();
+    let ResultAndState { result, state } = evm.transact().expect("EVM failed");
+    let ExecutionResult::Success { output, .. } = result else {
+        panic!("failed executing bytecode: {result:#?}");
+    };
+    let Output::Create(_, Some(created_address)) = output else {
+        panic!("failed creating contract: {output:#?}");
+    };
 
-    match reason {
-        InstructionResult::Stop | InstructionResult::Return => {}
-        reason => panic!("unexpected exit reason while creating: {:?}", reason),
-    }
-    let created_contract = interpreter.return_value();
+    // Run the created bytecode with just the interpreter.
+    let created_bytecode = state[&created_address]
+        .info
+        .code
+        .as_ref()
+        .expect("failed creation");
 
-    env.tx.caller = caller_address;
-    env.tx.data = calldata;
+    let mut run_env = Env::default();
+    run_env.tx.caller = caller;
+    run_env.tx.transact_to = TransactTo::call(created_address);
+    run_env.tx.data = calldata;
 
-    let created_bytecode = to_analysed::<LatestSpec>(Bytecode::new_raw(created_contract));
-    let contract = Contract::new_env::<LatestSpec>(&env, created_bytecode);
+    let contract = Contract::new_env(
+        &run_env,
+        created_bytecode.clone(),
+        created_bytecode.hash_slow(),
+    );
+    let mut host = DummyHost::new(run_env);
+    let table = &make_instruction_table::<_, LatestSpec>();
 
     for _ in 0..args.num_runs {
-        let mut interpreter = revm_interpreter::Interpreter::new(contract.clone(), u64::MAX, false);
-        let timer = Instant::now();
-        let reason = interpreter.run::<_, LatestSpec>(&mut host);
-        let dur = timer.elapsed();
-        host.clear();
+        let mut interpreter = Interpreter::new(contract.clone().into(), u64::MAX, false);
 
-        match reason {
-            InstructionResult::Return | InstructionResult::Stop => (),
-            reason => {
-                panic!("unexpected exit reason while benchmarking: {:?}", reason)
-            }
-        }
+        let timer = Instant::now();
+        let action = interpreter.run(SharedMemory::new(), table, &mut host);
+        let dur = timer.elapsed();
+
+        assert!(
+            interpreter.instruction_result.is_ok(),
+            "interpreter failed with {:?}",
+            interpreter.instruction_result
+        );
+        assert!(action.is_return(), "unexpected exit action: {action:?}");
+
+        host.clear();
 
         println!("{}", dur.as_micros() as f64 / 1e3)
     }

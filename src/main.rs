@@ -102,7 +102,7 @@ fn main() {
         let _ = validate_executable("cargo", &PathBuf::from("cargo"))?;
         let _ = validate_executable("poetry", &PathBuf::from("poetry"))?;
         let _ = validate_executable("python3", &PathBuf::from(args.cpython_executable))?;
-        // let _ = validate_executable("pypy3", &PathBuf::from(args.pypy_executable))?;
+        let _ = validate_executable("pypy3", &PathBuf::from(args.pypy_executable))?;
         let _ = validate_executable("npm", &PathBuf::from(args.npm_executable))?;
 
         let default_calldata = hex::decode(args.default_calldata_str.to_string())?;
