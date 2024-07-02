@@ -6,7 +6,8 @@ authors = ["Ziyad Edher <ziyad.edher@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-py-evm = "^0.6.0-alpha.1"
+py-evm = "^0.10.1-beta.1"
+setuptools = "^70.1.1"
 
 [tool.poetry.dev-dependencies]
 mypy = "^1.0.0"
