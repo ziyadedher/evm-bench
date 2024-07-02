@@ -1,8 +1,8 @@
 from typing import cast, Final
 
+import timeit
 import argparse
 import pathlib
-import time
 
 import eth.abc
 import eth.consensus.pow
@@ -16,6 +16,7 @@ import eth_typing
 import eth_utils
 
 
+GAS_PRICE: Final[int] = 875_000_000
 GAS_LIMIT: Final[int] = 1_000_000_000
 ZERO_ADDRESS: Final[eth_typing.Address] = eth.constants.ZERO_ADDRESS
 
@@ -38,14 +39,22 @@ def _construct_chain() -> eth.chains.base.MiningChain:
     chain_class = eth.chains.base.MiningChain.configure(
         __name__="TestChain",
         vm_configuration=(
-            (eth.constants.GENESIS_BLOCK_NUMBER, eth.vm.forks.berlin.BerlinVM),
+            (eth.constants.GENESIS_BLOCK_NUMBER, eth.vm.forks.cancun.CancunVM),
         ),
     )
     chain = chain_class.from_genesis(
         eth.db.atomic.AtomicDB(),
         genesis_params={
-            "difficulty": 1,
+            "difficulty": 0,
             "gas_limit": 2 * GAS_LIMIT,
+        },
+        genesis_state={
+            CALLER_ADDRESS: {
+                "balance": 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff,
+                "nonce": 0,
+                "code": b"",
+                "storage": {},
+            }
         },
     )
 
@@ -64,7 +73,7 @@ def _benchmark(
     nonce = evm.state.get_nonce(caller_address)
     tx = evm.create_unsigned_transaction(
         nonce=nonce,
-        gas_price=0,
+        gas_price=GAS_PRICE,
         gas=GAS_LIMIT,
         to=eth.constants.CREATE_CONTRACT_ADDRESS,
         value=0,
@@ -78,7 +87,7 @@ def _benchmark(
     nonce = evm.state.get_nonce(caller_address)
     tx = evm.create_unsigned_transaction(
         nonce=nonce,
-        gas_price=0,
+        gas_price=GAS_PRICE,
         gas=GAS_LIMIT,
         to=contract_address,
         value=0,
@@ -90,11 +99,9 @@ def _benchmark(
     def bench() -> None:
         evm.state.get_transaction_executor().build_computation(evm_message, signed_tx)
 
-    for _ in range(num_runs):
-        start = time.perf_counter_ns()
-        bench()
-        end = time.perf_counter_ns()
-        print((end - start) / 1e6)
+    results = timeit.repeat(bench, number=1, repeat=num_runs)
+    for result in results:
+        print(result * 1000)
 
 
 def parse_args() -> argparse.Namespace:

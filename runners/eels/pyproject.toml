@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "eels"
+version = "0.1.0"
+description = "Runner for the Ethereum execution specs"
+authors = ["Sam Wilson <sam@binarycake.ca>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10"
+coincurve = "^20.0.0"
+ethereum = {git = "https://github.com/ethereum/execution-specs.git"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
